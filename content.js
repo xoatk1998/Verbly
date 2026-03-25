@@ -52,6 +52,14 @@
     Object.assign(overlayHost.style, { position: 'fixed', inset: '0', zIndex: '2147483647', pointerEvents: 'auto' });
     document.body.appendChild(overlayHost);
 
+    // Prevent page-level keydown capture listeners (e.g. YouTube, SPAs with hotkeys)
+    // from calling preventDefault() and blocking typing in our shadow DOM input.
+    const keydownCapture = (e) => {
+      if (e.composedPath().includes(overlayHost)) e.stopPropagation();
+    };
+    window.addEventListener('keydown', keydownCapture, true);
+    overlayHost._keydownCapture = keydownCapture;
+
     const shadow = overlayHost.attachShadow({ mode: 'open' });
     shadow.innerHTML = `<style>${getStyles()}</style><div id="backdrop"><div id="card"></div></div>`;
 
@@ -338,6 +346,9 @@
 
   function closeOverlay() {
     if (overlayHost) {
+      if (overlayHost._keydownCapture) {
+        window.removeEventListener('keydown', overlayHost._keydownCapture, true);
+      }
       const card = overlayHost.shadowRoot?.getElementById('card');
       if (card?._keyHandler) document.removeEventListener('keydown', card._keyHandler);
       overlayHost.style.opacity = '0';

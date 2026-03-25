@@ -214,7 +214,12 @@ async function buildAndShowSession() {
     sessionTimeoutSeconds: settings.sessionTimeoutSeconds ?? 90
   };
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  // Fall back to any HTTP/HTTPS tab if the active tab can't run content scripts
+  // (e.g. chrome:// pages, new tab, PDF, chrome-extension:// pages).
+  if (!tab || !tab.url?.startsWith('http')) {
+    [tab] = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+  }
   if (!tab?.id) return;
 
   try {
