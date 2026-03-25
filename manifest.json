@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Learn New Words",
+  "version": "1.0.0",
+  "description": "Hoc tu vung tieng Anh-Viet moi 10 phut khi duyet web",
+  "permissions": [
+    "alarms",
+    "storage",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Learn New Words"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

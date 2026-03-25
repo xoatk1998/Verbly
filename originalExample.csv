@@ -1,0 +1,132 @@
+english,vietnamese,exampleSentence,englishMeaning,difficulty,category
+whisper,thì thầm,There are whispers of rebellion all around.,"The act of speaking in a quiet voice, especially, without vibration of the vocal cords.",A2,Daily Communication
+secret,bí mật,"""Can you keep a secret?"" ""Yes."" ""So can I."".",A piece of knowledge that is hidden and intended to be kept hidden.,C2,Daily Communication
+choice,lựa chọn,Do I have a choice of what color to paint it?,An option; a decision; an opportunity to choose or select something.,C2,Daily Communication
+belief,niềm tin,It's my belief that the thief is somebody known to us.,Mental acceptance of a claim as true.,A2,Daily Communication
+lonely,cô đơn,She feels lonely.,Unhappy because of feeling isolated from contact with other people.,B1,Daily Communication
+excited,hào hứng,The fireworks which opened the festivities excited anyone present.,To stir the emotions of.,A2,Daily Communication
+thirsty,khát,After all that work I am really thirsty.,Needing to drink.,B1,Daily Communication
+disgusting,kinh tởm,It disgusts me to see her chew with her mouth open.,To cause an intense dislike for something.,A2,Daily Communication
+salty,mặn,This is salty.,Tasting of salt.,B2,Daily Communication
+spicy,cay,He prepared a spicy casserole.,"Of, pertaining to, or containing spice.",C2,Daily Communication
+bland,nhạt,A bland diet.,Having a soothing effect; not irritating or stimulating.,B1,Daily Communication
+mouse,chuột,Captain Higgins moused the hook with a bit of marline to prevent the block beckets from falling out under slack.,Any small rodent of the genus Mus.,C2,Office
+scanner,máy quét,"He put the picture in the scanner, then e-mailed a copy of it to his family.",A device which scans documents in order to convert them to a digital medium.,B1,Office
+document,tài liệu,"He documented each step of the process as he did it, which was good when the investigation occurred.","An original or official paper used as the basis, proof, or support of anything else, including any writing, book, or other instrument conveying information pertinent to such proof or support.",B2,Office
+conference,hội nghị,Welcome to the conference.,The act of consulting together formally; serious conversation or discussion; interchange of views.,C1,Office
+message,tin nhắn,We've just received an urgent message from the President.,"A communication, or what is communicated; any concept or information conveyed.",A2,Office
+appointment,cuộc hẹn,His appointment was deemed suitable.,The act of appointing a person to hold an office or to have a position of trust,B1,Office
+resume,sơ yếu lý lịch,We will resume this discussion tomorrow at nine.,To take back possession of (something).,B2,Office
+contract,hợp đồng,Marriage is a contract.,"An agreement between two or more parties, to perform a specific job or work order, often temporary or of fixed duration and usually governed by a written agreement.",C2,Office
+bonus,thưởng,The employee of the week receives a bonus for his excellent work.,Something extra that is good; an added benefit.,B1,Office
+promotion,thăng chức,I'll have to give myself a promotion!,An advancement in rank or position.,B2,Office
+benefits,phúc lợi,It was for her benefit.   His benefit was free beer.,An advantage; help or aid from something.,C2,Office
+software,phần mềm,Update my software.,"Encoded computer instructions, usually modifiable (unless stored in some form of unalterable memory such as ROM).",B2,IT
+database,cơ sở dữ liệu,I have a database of all my contacts in my personal organizer.,"(general) A collection of (usually) organized information in a regular structure, usually but not necessarily in a machine-readable format accessible by a computer.",C1,IT
+browser,trình duyệt,Browsers are very useful.,A person or animal who browses.,C2,IT
+domain,tên miền,The king ruled his domain harshly.,A geographic area owned or controlled by a single person or organization.,C2,IT
+hosting,dịch vụ lưu trữ,I was terrible at hosting that show.,To perform the role of a host.,B1,IT
+cloud,đám mây,He opened the door and was greeted by a cloud of bats.,A rock; boulder; a hill.,C1,IT
+backup,sao lưu,"If the goalkeeper is injured, we have a backup.",A reserve or substitute.,C2,IT
+encryption,mã hóa,This is an example for encryption.,"The process of obscuring information to make it unreadable without special knowledge, key files, or passwords.",C2,IT
+firewall,tường lửa,Firewalls are important.,"A fireproof barrier used to prevent the spread of fire between or through buildings, structures, electrical substation transformers, or within an aircraft or vehicle.",A2,IT
+hacker,tin tặc,A tennis hacker.,One who is expert at programming and solving problems with a computer.,B2,IT
+update,cập nhật,He gave me an update on the situation in New York.,An advisement providing more up-to-date information than currently known.,C1,IT
+patch,bản vá,His sleeves had patches on the elbows where different fabric had been sewn on to replace material that had worn away.,"A piece of cloth, or other suitable material, sewed or otherwise fixed upon a garment to repair or strengthen it, especially upon an old garment to cover a hole.",C1,IT
+bug,lỗi phần mềm,These flies are a bother. I’ll get some bug spray and kill them.,An insect of the order Hemiptera (the “true bugs”).,A2,IT
+glitch,sự cố nhỏ,They are still trying to work out all the glitches.,A problem affecting function.,C1,IT
+crash,sập hệ thống,After the lightning came the crash of thunder.,"A sudden, intense, loud sound, as made for example by cymbals.",B1,IT
+reboot,khởi động lại,The system reboots every weekend after updates are installed.,An instance of rebooting.,C2,IT
+shutdown,tắt máy,"You need to enter your password at startup, but it's not required at shutdown.","The action of stopping operations; a closing, of a computer, business, event, etc.",B1,IT
+developer,nhà phát triển,This is an example for developer.,A person or entity engaged in the creation or improvement of certain classes of products.,C2,IT
+programmer,lập trình viên,We're programmers.,One who writes computer programs; a software developer.,B2,IT
+coding,lập trình,I learned to code on an early home computer in the 1980s.,To write software programs.,B1,IT
+algorithm,thuật toán,The algorithms changed.,A collection of ordered steps that solve a mathematical problem. A precise step-by-step plan for a computational procedure that possibly begins with an input value and yields an output value in a finite number of steps.,C2,IT
+api,giao diện lập trình ứng dụng,Dark Sky does not work without an api-key.,Definition of api.,A2,IT
+interface,giao diện,Public relations firms often serve as the interface between a company and the press.,The point of interconnection or contact between entities.,B1,IT
+frontend,giao diện người dùng,This is an example for frontend.,That part of a hardware or software system that is conceptually closest to the user; the user interface.,B1,IT
+backend,hệ thống máy chủ,The back end of the operation is kept out of sight of the customers.,"The rear, back, or unseen portion (of something).",B1,IT
+fullstack,toàn diện,This is an example for fullstack.,Definition of fullstack.,B1,IT
+script,kịch bản,Read the script.,A writing; a written document.,B2,IT
+automation,tự động hóa,Job automation is a good idea.,"The act or process of converting the controlling of a machine or device to a more automatic system, such as computer or electronic controls.",C2,IT
+ai,trí tuệ nhân tạo,AI is theft.,"A type of three-toed sloth, Bradypus tridactylus, endemic to forests of southern Venezuela, the Guianas, and northern Brazil.",C1,IT
+machine learning,máy học,Are you interested in machine learning?,A field of study concerned with the design and development of algorithms and techniques that allow computers to learn.,C1,IT
+blockchain,chuỗi khối,Their project is based on blockchain technology.,A shared record of past transactions in a cryptocurrency network.,C1,IT
+crypto,tiền điện tử,Crypto-Jews invented cryptocurrency.,A secret supporter or follower.,A2,IT
+explore,khám phá,The committee has been exploring alternative solutions to the problem at hand.,An exploration; a tour of a place to see what it is like.,A2,Travel
+adventure,cuộc phiêu lưu,A life full of adventures.,"The encountering of risks; a bold undertaking, in which dangers are likely to be encountered, and the issue is staked upon unforeseen events; a daring feat.",B1,Travel
+airport,sân bay,"Because of this, and contrary to popular belief, British airports primarily act as giant wealth extractors, transporting our richest citizens out of the country as often as possible to take their money overseas. ― The Independent, Heathrow expansion to mainly benefit wealthy frequent fliers, research finds, 23 june 2018.","An airfield (an area designated for the takeoff and landing of aircraft), including one or more runways and (for commercial airports) one or more passenger terminals.",C2,Travel
+camping,cắm trại,We're planning to camp in the field until Sunday.,To live in a tent or similar temporary accommodation.,A2,Travel
+tent,lều,We were camping in a three-man tent.,"A pavilion or portable lodge consisting of skins, canvas, or some strong cloth, stretched and sustained by poles, used for sheltering people from the weather.",A2,Travel
+backpack,ba lô,Tom went backpacking.,"A knapsack, sometimes mounted on a light frame, but always supported by straps, worn on a person’s back for the purpose of carrying things, especially when hiking, or on a student's back when carrying books.",B2,Travel
+itinerary,lịch trình,Check the itinerary.,A written schedule of activities for a vacation or road trip.,B2,Travel
+destination,điểm đến,What is his destination?,The act of destining or appointing.,C2,Travel
+location,vị trí,This is an example for location.,A particular point or place in physical space.,B2,Travel
+forest,rừng,A forest of criticism.,"A dense uncultivated tract of trees and undergrowth, larger than woods.",A2,Travel
+ingredient,thành phần,Mix the ingredients.,"One of the substances present in a mixture, especially food.",B1,Culinary
+chef,đầu bếp,Kiss the chef. (slogan on aprons used by home barbecue enthusiasts).,The presiding cook in the kitchen of a large household.,B2,Culinary
+bill,hóa đơn,"Bill, please.","Any of various bladed or pointed hand weapons, originally designating an Anglo-Saxon sword, and later a weapon of infantry, especially in the 14th and 15th centuries, commonly consisting of a broad, heavy, double-edged, hook-shaped blade, with a short pike at the back and another at the top, attached to the end of a long staff.",A2,Culinary
+fridge,tủ lạnh,The fridge exploded.,A refrigerator.,B2,Culinary
+pot,nồi,"After his arrest, his prospects went to pot.",A flat-bottomed vessel (usually metal) used for cooking food.,A2,Culinary
+fork,nĩa,West Fork White River and East Fork White River join together to form the White River of Indiana.,"A pronged tool having a long straight handle, used for digging, lifting, throwing etc.",B1,Culinary
+spoon,muỗng,Sarah spooned some apple sauce onto her plate.,"An implement for eating or serving; a scooped utensil whose long handle is straight, in contrast to a ladle.",C1,Culinary
+spices,gia vị,I like spices.,Aromatic or pungent plant matter (usually dried) used to season or flavour food.,C2,Culinary
+balcony,ban công,The balcony is small.,"An accessible structure extending from a building, especially outside a window.",B2,Housing
+lift,thang máy,He gave me a lift to the bus station.,An act of lifting or raising.,A2,Housing
+appliance,thiết bị,Sami sells appliances.,"An implement, an instrument or apparatus designed (or at least used) as a means to a specific end (often specified), especially:",C2,Housing
+cooling,làm mát,I like to let my tea cool before drinking it so I don't burn my tongue.,"To lose heat, to get colder.",A2,Housing
+ventilation,thông gió,Pietro entered the ventilation shaft.,The replacement of stale or noxious air with fresh.,C2,Housing
+insulation,cách nhiệt,My house has no insulation.,The act of insulating; detachment from other objects; isolation.,B1,Housing
+plumbing,hệ thống ống nước,"My plumbing was playing up, so I had to see the doctor.","The pipes, together with the joints, tanks, stopcocks, taps and other fixtures of a water, gas or sewage system in a house or other building.",C1,Housing
+electricity,điện,Opening night for the new production had an electricity unlike other openings.,"Originally, a property of amber and certain other nonconducting substances to attract lightweight material when rubbed, or the cause of this property; now understood to be a phenomenon caused by the distribution and movement of charged subatomic particles and their interaction with the electromagnetic field.",C1,Housing
+mortgage,thế chấp,We're renting a property in the city centre because we can't afford to get a mortgage yet.,"A special form of secured loan where the purpose of the loan must be specified to the lender, to purchase assets that must be fixed (not movable) property, such as a house or piece of farm land. The assets are registered as the legal property of the borrower but the lender can seize them and dispose of them if they are not satisfied with the manner in which the repayment of the loan is conducted by the borrower. Once the loan is fully repaid, the lender loses this right of seizure and the assets are then deemed to be unencumbered.",C2,Housing
+suburb,ngoại ô,From the suburbs.,"A residential area located on the outskirts of a city or large town that usually includes businesses that cater to its residents; such as schools, grocery stores, shopping centers, restaurants, convenience stores, etc.",B2,Housing
+downtown,trung tâm thành phố,John walked every day to his downtown job.,"The main business part of a city or town, usually located at or near its center.",C2,Housing
+malfunction,hỏng hóc,The malfunction is very important.,Meaning of malfunction.,C2,Mixed
+flyer,tờ rơi,The flyer is very important.,Meaning of flyer.,B2,Mixed
+outlet,"lối ra, ổ cắm",The outlet is very important.,Meaning of outlet.,A2,Mixed
+grip,nắm,The grip is very important.,Meaning of grip.,B1,Mixed
+tack,"đóng, dán",The tack is very important.,Meaning of tack.,B2,Mixed
+shutter,"cửa chớp, cửa trập",The shutter is very important.,Meaning of shutter.,C2,Mixed
+scatter,rải rác,The scatter is very important.,Meaning of scatter.,C1,Mixed
+pile,chồng,The pile is very important.,Meaning of pile.,B1,Mixed
+canopy,"vòm, mái che",The canopy is very important.,Meaning of canopy.,C2,Mixed
+windmill,cối xay gió,The windmill is very important.,Meaning of windmill.,A2,Mixed
+hammer,búa,The hammer is very important.,Meaning of hammer.,C2,Mixed
+chairlift,cáp treo,The chairlift is very important.,Meaning of chairlift.,A2,Mixed
+curtains,rèm cửa,The curtains is very important.,Meaning of curtains.,C2,Mixed
+precedence,quyền ưu tiên,The precedence is very important.,Meaning of precedence.,C1,Mixed
+simultaneously,đồng thời,The simultaneously is very important.,Meaning of simultaneously.,C1,Mixed
+interpretation,giải thích,The interpretation is very important.,Meaning of interpretation.,A2,Mixed
+there,ở nơi đó,You rinse and de-string the green beans; I'll take it from there.,That place.,A1,Daily Communication
+think,suy nghĩ,I'll have a think about that and let you know.,An act of thinking; consideration (of something).,A1,Daily Communication
+stand,đứng,The Commander says we will make our stand here.,The act of standing.,A1,Daily Communication
+corridor,hành lang,The students walked quickly through the corridor to reach their next class.,"A long, narrow passage in a building with doors leading to rooms on either side.",A2,Housing
+patio,sân hiên,We had breakfast on the patio and enjoyed the morning sun.,"A paved outdoor area adjoining a house, used for dining or recreation.",A2,Housing
+malfunction,hỏng hóc,The elevator malfunctioned and trapped several passengers inside.,A failure to function normally or correctly.,B1,IT
+flyer,tờ rơi,She handed out flyers on the street to advertise the grand opening.,A small printed leaflet used for advertising or distributing information.,A2,Office
+cord,dây,The lamp cord was too short to reach the nearest outlet.,A length of flexible insulated wire used to connect an electrical device to a power source.,A2,Housing
+outlet,ổ cắm / lối ra,Plug your charger into the outlet near the desk.,"A socket in a wall for connecting electrical devices; also, a way out or a means of release.",A2,Housing
+grip,nắm chặt,He tightened his grip on the railing as he climbed the icy stairs.,A firm hold on something; the ability to hold or maintain contact.,B1,Daily Communication
+tack,đinh ghim / ghim vào,She used a tack to pin the notice to the bulletin board.,"A short nail with a broad, flat head; or to fasten something with tacks.",B2,Housing
+shutter,cửa chớp / cửa trập,He closed the shutters to block out the bright afternoon sunlight.,A panel or screen that can be closed over a window; also the part of a camera that opens to expose film.,B1,Housing
+pillow,gối,She fluffed her pillow before settling in for the night.,A soft cushion used to support the head while sleeping or resting.,A1,Housing
+utensil,đồ dùng bếp,Make sure all the cooking utensils are clean before you start preparing the meal.,"A tool or implement used for a specific purpose, especially in a kitchen.",A2,Housing
+chop,thái / chặt,Chop the onions finely before adding them to the pan.,To cut something into pieces with repeated sharp blows of a knife or axe.,A2,Culinary
+scatter,rải rác / phân tán,The wind scattered the fallen leaves all across the yard.,To cause things to move apart in different directions; to disperse.,B1,Daily Communication
+pile,đống / chồng,There was a large pile of documents on his desk waiting to be reviewed.,A heap of things placed one on top of another; a large amount.,A2,Housing
+tent,lều,We set up our tent near the river before it got dark.,"A portable shelter made of fabric or other material, stretched over a frame or poles, used for camping.",A2,Travel
+canopy,vòm / mái che,The tall trees formed a dense canopy that blocked most of the sunlight.,An ornamental cloth covering suspended or held over something; a roof-like covering formed by the tops of trees.,B2,Housing
+windmill,cối xay gió,The old windmill on the hill has been turning for over a hundred years.,"A building or structure with large sails or blades that are turned by the wind, used to grind grain or generate electricity.",B1,Mixed
+screwdriver,tua vít,He used a screwdriver to assemble all the pieces of the flat-pack furniture.,A tool with a handle and a shaped tip used to drive screws into or remove them from surfaces.,A2,Housing
+screw,vít / vặn,Tighten each screw firmly so the shelf stays in place on the wall.,"A metal fastener with a spiral thread, driven into material by rotating; or the act of fastening with a screw.",A2,Housing
+nail,đinh / móng tay,He hammered a nail into the wall to hang the picture frame.,"A small metal spike with a broadened flat head, driven in to join pieces of wood or to serve as a hook; also the hard covering at the tip of a finger or toe.",A2,Housing
+hammer,búa,She picked up the hammer and drove the nail into the wooden plank.,"A hand tool with a heavy metal head mounted on a handle, used for driving nails or breaking things.",A2,Housing
+bake,nướng (lò),She loves to bake fresh bread every Sunday morning.,"To cook food using dry heat in an oven, without direct exposure to a flame.",A2,Culinary
+bacon,thịt xông khói,He fried some bacon and eggs for a quick breakfast.,"Cured and smoked meat from the back or sides of a pig, typically sold in thin slices.",A2,Culinary
+chairlift,cáp treo ghế,They took the chairlift to the top of the slope before skiing down.,"A series of chairs hanging from a continuously moving cable, used to transport people up a mountain or ski slope.",B1,Travel
+scissors,cái kéo,She used scissors to carefully cut along the dotted line.,A cutting instrument consisting of two blades laid one on top of the other and fastened in the middle.,A1,Housing
+curtains,rèm cửa,She drew the curtains to keep the early morning light from waking everyone.,Pieces of fabric hung at a window or around a bed to block light or provide privacy.,A2,Housing
+precedence,quyền ưu tiên,"In an emergency, passenger safety always takes precedence over everything else.","The condition of being considered more important or urgent than others; priority in order, rank, or importance.",B2,Daily Communication
+simultaneously,đồng thời,"The two announcements were made simultaneously, causing some confusion.",At the same time; occurring or done at the same moment.,B2,Daily Communication
+interpretation,sự diễn giải / giải thích,His interpretation of the contract clause differed from the lawyer's.,The action of explaining or understanding something in a particular way; a personal explanation of something.,B2,Daily Communication

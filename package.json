@@ -1,0 +1,15 @@
+{
+  "name": "learn-new-word",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development",
+    "watch": "webpack --mode development --watch"
+  },
+  "devDependencies": {
+    "copy-webpack-plugin": "^13.0.0",
+    "webpack": "^5.99.0",
+    "webpack-cli": "^6.0.0"
+  }
+}

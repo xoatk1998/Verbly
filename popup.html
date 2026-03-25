@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learn New Words</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">
+      <div class="logo-dot"></div>
+      Learn New Words
+    </div>
+    <label class="toggle" title="Bật/tắt">
+      <input type="checkbox" id="enabled-toggle" />
+      <span class="toggle-slider"></span>
+    </label>
+  </div>
+
+  <div class="countdown-bar">
+    <div class="countdown-left">
+      <div class="countdown-label">Từ tiếp theo</div>
+      <div class="countdown-value" id="countdown">--:--</div>
+    </div>
+    <button class="test-btn" id="trigger-now-btn">Hiện ngay</button>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="words">Từ vựng</button>
+    <button class="tab" data-tab="all-words">Tất cả từ</button>
+    <button class="tab" data-tab="stats">Thống kê</button>
+    <button class="tab" data-tab="settings">Cài đặt</button>
+  </nav>
+
+  <!-- ── Words Tab ─────────────────────────────────── -->
+  <div class="tab-content active" id="tab-words">
+
+    <div class="learning-status" id="learning-status">
+      <div class="ls-item ls-new">
+        <span class="ls-count" id="ls-new">0</span>
+        <span class="ls-label">Mới</span>
+      </div>
+      <div class="ls-item ls-learning">
+        <span class="ls-count" id="ls-learning">0</span>
+        <span class="ls-label">Đang học</span>
+      </div>
+      <div class="ls-item ls-mastered">
+        <span class="ls-count" id="ls-mastered">0</span>
+        <span class="ls-label">Thành thạo</span>
+      </div>
+    </div>
+
+    <div class="import-row">
+      <input type="text" id="search-input" class="search-input" placeholder="Tìm kiếm từ..." />
+      <button class="import-btn" id="import-btn">Nhập CSV</button>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none" />
+    </div>
+
+    <div id="import-result" class="import-result" hidden></div>
+
+    <div class="add-word-form">
+      <input type="text" id="new-english" placeholder="English" class="form-input" />
+      <input type="text" id="new-vietnamese" placeholder="Tiếng Việt" class="form-input" />
+      <button class="add-btn" id="add-word-btn">Thêm</button>
+    </div>
+
+    <div class="word-list" id="word-list"></div>
+    <div class="word-count" id="word-count"></div>
+  </div>
+
+  <!-- ── All Words Tab ─────────────────────────────── -->
+  <div class="tab-content" id="tab-all-words">
+    <div class="aw-toolbar">
+      <input type="text" id="aw-search" class="search-input" placeholder="Tìm kiếm từ..." />
+      <span class="aw-count" id="aw-count"></span>
+    </div>
+    <div class="word-list aw-list" id="aw-word-list"></div>
+    <div class="aw-pagination" id="aw-pagination"></div>
+  </div>
+
+  <!-- ── Stats Tab ──────────────────────────────────── -->
+  <div class="tab-content" id="tab-stats">
+
+    <div class="today-progress" id="today-progress">
+      <div class="tp-label">Hôm nay</div>
+      <div class="tp-value" id="today-value">0 / 0 từ mới</div>
+      <div class="tp-bar-wrap">
+        <div class="tp-bar-fill" id="today-bar"></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-value" id="stat-correct">0</div>
+        <div class="stat-label">Đúng</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-value" id="stat-incorrect">0</div>
+        <div class="stat-label">Sai</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-value" id="stat-streak">0</div>
+        <div class="stat-label">Streak</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-value" id="stat-best-streak">0</div>
+        <div class="stat-label">Tốt nhất</div>
+      </div>
+    </div>
+
+    <div class="accuracy-row">
+      <span>Độ chính xác</span>
+      <span id="stat-accuracy">--%</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-bar"></div>
+    </div>
+
+    <button class="reset-btn" id="reset-stats-btn">Đặt lại thống kê</button>
+  </div>
+
+  <!-- ── Settings Tab ───────────────────────────────── -->
+  <div class="tab-content" id="tab-settings">
+
+    <div class="setting-group">
+      <label class="setting-label">Cấp độ muốn học <span class="setting-note">(mặc định: tất cả)</span></label>
+      <div class="filter-pills" id="difficulty-filter">
+        <button class="filter-pill diff-pill-b1" data-value="B1">B1</button>
+        <button class="filter-pill diff-pill-b2" data-value="B2">B2</button>
+        <button class="filter-pill diff-pill-c1" data-value="C1">C1</button>
+        <button class="filter-pill diff-pill-c2" data-value="C2">C2</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Chủ đề muốn học <span class="setting-note">(mặc định: tất cả)</span></label>
+      <div class="filter-pills" id="category-filter">
+        <span class="filter-note">Chưa có chủ đề nào</span>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Tự đóng sau (giây)</label>
+      <div class="interval-options">
+        <button class="timeout-btn" data-value="30">30s</button>
+        <button class="timeout-btn" data-value="60">60s</button>
+        <button class="timeout-btn active" data-value="90">90s</button>
+        <button class="timeout-btn" data-value="120">2p</button>
+        <button class="timeout-btn" data-value="180">3p</button>
+        <button class="timeout-btn" data-value="0">Tắt</button>
+      </div>
+    </div>
+
+
+    <div class="setting-group">
+      <label class="setting-label">Bật/tắt hiện từ</label>
+      <label class="toggle big-toggle">
+        <input type="checkbox" id="enabled-toggle-settings" />
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Khoảng cách giữa các lần hiện (phút)</label>
+      <div class="interval-options">
+        <button class="interval-btn" data-value="1">1</button>
+        <button class="interval-btn" data-value="5">5</button>
+        <button class="interval-btn active" data-value="10">10</button>
+        <button class="interval-btn" data-value="15">15</button>
+        <button class="interval-btn" data-value="30">30</button>
+        <button class="interval-btn" data-value="60">60</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Số từ mới học mỗi ngày</label>
+      <div class="number-control">
+        <button class="nc-btn" id="wpd-dec">−</button>
+        <input type="number" id="words-per-day" class="nc-input" value="5" min="1" max="20" />
+        <button class="nc-btn" id="wpd-inc">+</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Số từ hiện mỗi lần popup</label>
+      <div class="interval-options">
+        <button class="popup-size-btn" data-value="1">1</button>
+        <button class="popup-size-btn active" data-value="2">2</button>
+        <button class="popup-size-btn" data-value="3">3</button>
+        <button class="popup-size-btn" data-value="5">5</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Kiểu câu hỏi</label>
+      <div class="seg-control" id="direction-control">
+        <button class="seg-btn active" data-value="mixed">Hỗn hợp</button>
+        <button class="seg-btn" data-value="en-to-vn">EN → VN</button>
+        <button class="seg-btn" data-value="vn-to-en">VN → EN</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <label class="setting-label">Kiểu trả lời</label>
+      <div class="seg-control" id="answer-type-control">
+        <button class="seg-btn" data-value="mixed">Hỗn hợp</button>
+        <button class="seg-btn active" data-value="choice">Chọn đáp án</button>
+        <button class="seg-btn" data-value="typing">Gõ đáp án</button>
+      </div>
+    </div>
+
+    <div class="setting-group danger-zone">
+      <label class="setting-label">Dữ liệu</label>
+      <div class="danger-btns">
+        <button class="danger-btn" id="clear-words-btn">Xóa tất cả từ</button>
+        <button class="danger-btn outline" id="reset-default-btn">Khôi phục mặc định</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

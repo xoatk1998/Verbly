@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [[ \"$ARGUMENTS\" == *\"manifest.json\"* ]]; then npx web-ext lint; fi"
+          }
+        ]
+      }
+    ]
+  }
+}
