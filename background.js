@@ -1,4 +1,6 @@
 const FIBONACCI = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89];
+// { windowId, state, isStandalone } — restored/closed when quiz closes
+let pendingWindowRestore = null;
 function getFibInterval(correctCount) {
   return FIBONACCI[Math.min(correctCount, FIBONACCI.length - 1)];
 }
@@ -98,6 +100,7 @@ function parseCSVRow(line) {
 
 const DEFAULT_SETTINGS = {
   intervalMinutes: 10,
+  intervalSeconds: null,
   enabled: true,
   wordsPerDay: 5,
   wordsPerPopup: 2,
@@ -158,9 +161,12 @@ chrome.runtime.onStartup.addListener(async () => {
 });
 
 async function setupAlarm(settings) {
-  const interval = settings?.intervalMinutes || 10;
   await chrome.alarms.clear('learnWord');
-  chrome.alarms.create('learnWord', { periodInMinutes: interval });
+  if (!settings?.enabled) return; // leave alarm cleared when disabled
+  // For sub-minute intervals, content scripts handle timing via polling.
+  // The alarm still runs at 1-min minimum as a fallback for when no HTTP tabs are open.
+  const periodInMinutes = settings?.intervalSeconds ? 1 : (settings?.intervalMinutes || 10);
+  chrome.alarms.create('learnWord', { periodInMinutes });
 }
 
 // ─── Eligible word pool ───────────────────────────────────────────────────────
@@ -178,17 +184,35 @@ function getEligibleWords(words, settings) {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== 'learnWord') return;
+  const { settings } = await chrome.storage.local.get('settings');
+  // For sub-minute intervals, content script polling handles timing.
+  // The alarm only fires as a fallback when there are no HTTP tabs (e.g. only new tab open).
+  if (settings?.intervalSeconds) {
+    const httpTabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+    if (httpTabs.length > 0) return;
+    const { lastShownAt } = await chrome.storage.local.get('lastShownAt');
+    if (lastShownAt && (Date.now() - lastShownAt) < settings.intervalSeconds * 1000) return;
+  }
   await buildAndShowSession();
 });
 
-async function buildAndShowSession() {
+// Clean up state if the user manually closes the quiz window.
+chrome.windows.onRemoved.addListener(windowId => {
+  if (pendingWindowRestore?.windowId === windowId) {
+    pendingWindowRestore = null;
+    chrome.storage.local.remove('pendingQuizSession').catch(() => {});
+  }
+});
+
+async function buildAndShowSession(force = false) {
+  console.log('[LNW] buildAndShowSession called with force:', force);
   const [words, stored] = await Promise.all([
     getStoredWords(),
     chrome.storage.local.get(['settings', 'userWords', 'popupCount', 'stats'])
   ]);
   const settings = stored.settings || DEFAULT_SETTINGS;
-  if (!settings.enabled) return;
-  if (words.length === 0) return;
+  if (!force && !settings.enabled) return 'disabled';
+  if (words.length === 0) return 'no_words';
 
   const userWords = stored.userWords || {};
   const popupCount = (stored.popupCount || 0) + 1;
@@ -204,7 +228,7 @@ async function buildAndShowSession() {
     dailyState = await refreshDailyState(settings, words, updatedUserWords);
     updatedUserWords = (await chrome.storage.local.get('userWords')).userWords || {};
     questions = buildQuestions(settings, words, updatedUserWords, popupCount, dailyState);
-    if (questions.length === 0) return;
+    if (questions.length === 0) return 'no_questions';
   }
 
   const payload = {
@@ -214,22 +238,96 @@ async function buildAndShowSession() {
     sessionTimeoutSeconds: settings.sessionTimeoutSeconds ?? 90
   };
 
-  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  // Fall back to any HTTP/HTTPS tab if the active tab can't run content scripts
-  // (e.g. chrome:// pages, new tab, PDF, chrome-extension:// pages).
+  // getLastFocused with windowTypes:'normal' reliably returns the browser window
+  // the user is looking at. lastFocusedWindow:true in tabs.query can match
+  // devtools or extension popup windows and miss the correct tab.
+  let tab, targetWin;
+  try {
+    targetWin = await chrome.windows.getLastFocused({ windowTypes: ['normal'] });
+    [tab] = await chrome.tabs.query({ active: true, windowId: targetWin.id });
+  } catch (_) {}
+
+  // Fall back to an HTTP/HTTPS tab in the SAME window if the active tab can't
+  // run content scripts (e.g. chrome:// pages, new tab, PDF, extensions).
+  // Searching other windows would silently inject the overlay where the user
+  // isn't looking, so we only check the focused window.
   if (!tab || !tab.url?.startsWith('http')) {
-    [tab] = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+    let fallbackTab;
+    if (targetWin) {
+      [fallbackTab] = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'], windowId: targetWin.id });
+    }
+    if (fallbackTab) {
+      // The HTTP tab is in the background — bring it to front before we
+      // go fullscreen, otherwise the overlay renders in an invisible tab.
+      await chrome.tabs.update(fallbackTab.id, { active: true }).catch(() => {});
+      tab = fallbackTab;
+    } else {
+      tab = undefined;
+    }
   }
-  if (!tab?.id) return;
+
+  // Record when we last showed a session AFTER confirming questions exist and a
+  // tab is ready. This keeps the countdown accurate — it only resets when a
+  // popup is actually about to be displayed.
+  await chrome.storage.local.set({ lastShownAt: Date.now() });
+
+  if (!tab?.id) {
+    await chrome.storage.local.set({ pendingQuizSession: payload });
+
+    if (targetWin) {
+      const quizTab = await chrome.tabs.create({
+        url: chrome.runtime.getURL('quiz.html'),
+        windowId: targetWin.id,
+        active: true
+      }).catch(() => null);
+
+      if (quizTab) {
+        pendingWindowRestore = {
+          windowId: targetWin.id,
+          state: targetWin.state,
+          isStandalone: false,
+          quizTabId: quizTab.id
+        };
+        // GIN
+        // if (targetWin.state !== 'fullscreen') {
+        //   await chrome.windows.update(targetWin.id, { state: 'fullscreen' }).catch(() => {});
+        // }
+        return;
+      }
+    }
+
+    const quizWin = await chrome.windows.create({
+      url: chrome.runtime.getURL('quiz.html'),
+      type: 'normal',
+      focused: true
+    }).catch(() => null);
+    if (quizWin) {
+      await chrome.windows.update(quizWin.id, { state: 'fullscreen' }).catch(() => {});
+      pendingWindowRestore = { windowId: quizWin.id, state: null, isStandalone: true };
+    }
+    return;
+  }
+
+  // Enter fullscreen so the quiz hides the browser chrome entirely.
+  if (targetWin && targetWin.state !== 'fullscreen') {
+    pendingWindowRestore = { windowId: targetWin.id, state: targetWin.state, isStandalone: false };
+    try {
+      await chrome.windows.update(targetWin.id, { state: 'fullscreen' });
+      // Wait for the fullscreen transition to complete before sending the
+      // message — the content script is briefly unresponsive during the animation.
+      await new Promise(r => setTimeout(r, 500));
+    } catch (_) {
+      pendingWindowRestore = null;
+    }
+  }
 
   try {
     await chrome.tabs.sendMessage(tab.id, payload);
   } catch (_) {
     try {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] });
-      setTimeout(async () => {
-        try { await chrome.tabs.sendMessage(tab.id, payload); } catch (_) {}
-      }, 200);
+      await new Promise(r => setTimeout(r, 200));
+      await chrome.tabs.sendMessage(tab.id, payload).catch(() => {});
     } catch (_) {}
   }
 }
@@ -414,10 +512,22 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.type === 'UPDATE_SETTINGS') {
-    const settings = { ...DEFAULT_SETTINGS, ...message.settings };
-    chrome.storage.local.set({ settings }).then(() => {
-      setupAlarm(settings);
-      sendResponse({ ok: true });
+    const newSettings = { ...DEFAULT_SETTINGS, ...message.settings };
+    chrome.storage.local.get('settings').then(({ settings: oldSettings }) => {
+      const intervalChanged =
+        (oldSettings?.intervalSeconds ?? null) !== (newSettings.intervalSeconds ?? null) ||
+        (oldSettings?.intervalMinutes ?? 10) !== (newSettings.intervalMinutes ?? 10);
+
+      const updates = { settings: newSettings };
+      // Reset the last-shown timestamp whenever the interval changes so the
+      // countdown starts from the full interval immediately, not from a
+      // stale timestamp that makes it show 00:00 right away.
+      if (intervalChanged) updates.lastShownAt = Date.now();
+
+      chrome.storage.local.set(updates).then(() => {
+        setupAlarm(newSettings);
+        sendResponse({ ok: true });
+      });
     });
     return true;
   }
@@ -445,12 +555,42 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message.type === 'GET_NEXT_ALARM') {
-    chrome.alarms.get('learnWord').then(alarm => sendResponse({ scheduledTime: alarm?.scheduledTime || null }));
+    chrome.storage.local.get(['settings', 'lastShownAt']).then(({ settings, lastShownAt }) => {
+      if (!settings?.enabled) { sendResponse({ scheduledTime: null }); return; }
+      if (settings?.intervalSeconds) {
+        // For sub-minute intervals the alarm is pinned at 1 min and is not meaningful.
+        // Derive the real next time from when the session was last shown.
+        // If lastShownAt is null (never shown), return null so the UI shows '--:--'
+        // rather than 00:00 (which looks broken).
+        if (!lastShownAt) { sendResponse({ scheduledTime: null }); return; }
+        const next = lastShownAt + settings.intervalSeconds * 1000;
+        sendResponse({ scheduledTime: Math.max(next, Date.now()) });
+      } else {
+        chrome.alarms.get('learnWord').then(alarm => sendResponse({ scheduledTime: alarm?.scheduledTime || null }));
+      }
+    });
     return true;
   }
 
   if (message.type === 'TRIGGER_NOW') {
-    buildAndShowSession().then(() => sendResponse({ ok: true })).catch(() => sendResponse({ ok: false }));
+    buildAndShowSession(true)
+      .then(reason => sendResponse({ ok: !reason, reason: reason || null }))
+      .catch(err => sendResponse({ ok: false, reason: 'error', error: err?.message }));
+    return true;
+  }
+
+  if (message.type === 'SESSION_ENDED') {
+    if (pendingWindowRestore) {
+      const { windowId, state, isStandalone, quizTabId } = pendingWindowRestore;
+      pendingWindowRestore = null;
+      if (isStandalone) {
+        chrome.windows.remove(windowId).catch(() => {});
+      } else {
+        if (quizTabId) chrome.tabs.remove(quizTabId).catch(() => {});
+        chrome.windows.update(windowId, { state }).catch(() => {});
+      }
+    }
+    sendResponse({ ok: true });
     return true;
   }
 

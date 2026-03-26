@@ -1,5 +1,5 @@
 let allWords = [];
-let settings = { intervalMinutes: 10, enabled: true, wordsPerDay: 5, wordsPerPopup: 2, answerType: 'choice', questionDirection: 'mixed', selectedDifficulties: [], selectedCategories: [], sessionTimeoutSeconds: 90 };
+let settings = { intervalMinutes: 10, intervalSeconds: null, enabled: true, wordsPerDay: 5, wordsPerPopup: 2, answerType: 'choice', questionDirection: 'mixed', selectedDifficulties: [], selectedCategories: [], sessionTimeoutSeconds: 90 };
 let stats = { correct: 0, incorrect: 0, streak: 0, bestStreak: 0 };
 let searchQuery = '';
 let countdownInterval = null;
@@ -223,8 +223,17 @@ function renderSettings() {
   document.getElementById('enabled-toggle-settings').checked = settings.enabled;
   document.getElementById('words-per-day').value = settings.wordsPerDay || 5;
 
-  document.querySelectorAll('.interval-btn').forEach(b =>
-    b.classList.toggle('active', parseInt(b.dataset.value) === (settings.intervalMinutes || 10)));
+  document.querySelectorAll('.interval-btn').forEach(b => {
+    const val = b.dataset.value;
+    const isSeconds = val.endsWith('s');
+    let active;
+    if (settings.intervalSeconds) {
+      active = isSeconds && parseInt(val) === settings.intervalSeconds;
+    } else {
+      active = !isSeconds && parseInt(val) === (settings.intervalMinutes || 10);
+    }
+    b.classList.toggle('active', active);
+  });
 
   document.querySelectorAll('.popup-size-btn').forEach(b =>
     b.classList.toggle('active', parseInt(b.dataset.value) === (settings.wordsPerPopup || 2)));
@@ -263,7 +272,13 @@ document.getElementById('enabled-toggle-settings').addEventListener('change', as
 // Interval buttons
 document.querySelectorAll('.interval-btn').forEach(btn => {
   btn.addEventListener('click', async () => {
-    settings.intervalMinutes = parseInt(btn.dataset.value);
+    const val = btn.dataset.value;
+    if (val.endsWith('s')) {
+      settings.intervalSeconds = parseInt(val);
+    } else {
+      settings.intervalSeconds = null;
+      settings.intervalMinutes = parseInt(val);
+    }
     document.querySelectorAll('.interval-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     await saveSettings();
@@ -516,8 +531,22 @@ document.querySelectorAll('.tab').forEach(tab => {
 document.getElementById('trigger-now-btn').addEventListener('click', async () => {
   const btn = document.getElementById('trigger-now-btn');
   btn.textContent = '...'; btn.disabled = true;
-  try { await chrome.runtime.sendMessage({ type: 'TRIGGER_NOW' }); } catch (_) {}
-  setTimeout(() => { btn.textContent = 'Hiện ngay'; btn.disabled = false; }, 1200);
+  try {
+    const res = await chrome.runtime.sendMessage({ type: 'TRIGGER_NOW' });
+    if (!res?.ok) {
+      const msgs = {
+        no_words: 'No words found. Import a CSV first.',
+        no_questions: 'No words due right now.',
+        no_tab: 'Open a web page first.',
+        error: 'Something went wrong.',
+      };
+      btn.textContent = msgs[res?.reason] || 'Failed';
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = 'Show now'; }, 2500);
+      return;
+    }
+  } catch (_) {}
+  setTimeout(() => { btn.textContent = 'Show now'; btn.disabled = false; }, 1200);
 });
 
 // ─── Countdown ────────────────────────────────────────────────────────────────

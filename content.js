@@ -1,6 +1,44 @@
 (() => {
   let overlayHost = null;
 
+  // ─── Sub-minute interval polling ─────────────────────────────────────────────
+  // chrome.alarms minimum is 1 minute. For 15s/30s intervals, content scripts
+  // poll storage and call TRIGGER_NOW directly.
+
+  let pollingTimer = null;
+
+  function setupPolling() {
+    if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
+    chrome.storage.local.get('settings').then(({ settings }) => {
+      if (!settings?.intervalSeconds || !settings.enabled) return;
+      pollingTimer = setInterval(async () => {
+        if (overlayHost) return; // quiz already showing
+        try {
+          const [{ settings: s }, { lastShownAt }] = await Promise.all([
+            chrome.storage.local.get('settings'),
+            chrome.storage.local.get('lastShownAt')
+          ]);
+          if (!s?.enabled || !s.intervalSeconds) {
+            clearInterval(pollingTimer); pollingTimer = null; return;
+          }
+          const now = Date.now();
+          const elapsed = lastShownAt ? now - lastShownAt : Infinity;
+          if (elapsed >= s.intervalSeconds * 1000) {
+            // Claim the slot before sending to minimise duplicate triggers across tabs.
+            await chrome.storage.local.set({ lastShownAt: now });
+            chrome.runtime.sendMessage({ type: 'TRIGGER_NOW' }).catch(() => {});
+          }
+        } catch (_) {}
+      }, 1000);
+    }).catch(() => {});
+  }
+
+  setupPolling();
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.settings) setupPolling();
+  });
+  // ─────────────────────────────────────────────────────────────────────────────
+
   function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
@@ -349,6 +387,7 @@
       if (overlayHost._keydownCapture) {
         window.removeEventListener('keydown', overlayHost._keydownCapture, true);
       }
+      chrome.runtime.sendMessage({ type: 'SESSION_ENDED' }).catch(() => {});
       const card = overlayHost.shadowRoot?.getElementById('card');
       if (card?._keyHandler) document.removeEventListener('keydown', card._keyHandler);
       overlayHost.style.opacity = '0';
@@ -460,5 +499,16 @@
       #continue-btn { padding: 14px 40px; background: #6366f1; color: #fff; border: none; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
       #continue-btn:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(99,102,241,0.4); }
     `;
+  }
+
+  // When loaded inside the standalone quiz window (quiz.html), chrome.tabs.sendMessage
+  // cannot reach extension pages, so the session is stored in storage instead.
+  // Use the full extension URL to avoid false-positives on web pages named quiz.html.
+  if (location.href === chrome.runtime.getURL('quiz.html')) {
+    chrome.storage.local.get('pendingQuizSession').then(({ pendingQuizSession }) => {
+      if (!pendingQuizSession) return;
+      chrome.storage.local.remove('pendingQuizSession');
+      showSession(pendingQuizSession.questions, pendingQuizSession.streak, pendingQuizSession.sessionTimeoutSeconds ?? 90);
+    }).catch(() => {});
   }
 })();
