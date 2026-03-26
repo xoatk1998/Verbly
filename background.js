@@ -393,9 +393,15 @@ function buildQuestions(settings, words, userWords, popupCount, dailyState) {
     }
 
     let type;
-    if (answerType === 'choice') type = 'choice';
-    else if (answerType === 'typing') type = 'typing';
-    else type = Math.random() < 0.6 ? 'choice' : 'typing';
+    if (direction === 'en-to-vn') {
+      type = 'choice'; // typing Vietnamese is impractical; always use choice for EN→VN
+    } else if (answerType === 'choice') {
+      type = 'choice';
+    } else if (answerType === 'typing') {
+      type = 'typing';
+    } else {
+      type = Math.random() < 0.6 ? 'choice' : 'typing';
+    }
 
     let options = null;
     if (type === 'choice') {
