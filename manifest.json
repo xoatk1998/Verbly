@@ -3,17 +3,8 @@
   "name": "Learn New Words",
   "version": "1.0.0",
   "description": "Hoc tu vung tieng Anh-Viet moi 10 phut khi duyet web",
-  "permissions": [
-    "alarms",
-    "storage",
-    "scripting",
-    "tabs",
-    "windows"
-  ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
+  "permissions": ["alarms", "storage", "scripting", "tabs", "windows"],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "background": {
     "service_worker": "background.js"
   },

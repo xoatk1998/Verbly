@@ -1,5 +1,6 @@
 (() => {
   let overlayHost = null;
+  let countdownIv = null;
 
   // ─── Sub-minute interval polling ─────────────────────────────────────────────
   // chrome.alarms minimum is 1 minute. For 15s/30s intervals, content scripts
@@ -8,47 +9,58 @@
   let pollingTimer = null;
 
   function setupPolling() {
-    if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
-    chrome.storage.local.get('settings').then(({ settings }) => {
-      if (!settings?.intervalSeconds || !settings.enabled) return;
-      pollingTimer = setInterval(async () => {
-        if (overlayHost) return; // quiz already showing
-        try {
-          const [{ settings: s }, { lastShownAt }] = await Promise.all([
-            chrome.storage.local.get('settings'),
-            chrome.storage.local.get('lastShownAt')
-          ]);
-          if (!s?.enabled || !s.intervalSeconds) {
-            clearInterval(pollingTimer); pollingTimer = null; return;
-          }
-          const now = Date.now();
-          const elapsed = lastShownAt ? now - lastShownAt : Infinity;
-          if (elapsed >= s.intervalSeconds * 1000) {
-            // Claim the slot before sending to minimise duplicate triggers across tabs.
-            await chrome.storage.local.set({ lastShownAt: now });
-            chrome.runtime.sendMessage({ type: 'TRIGGER_NOW' }).catch(() => {});
-          }
-        } catch (_) {}
-      }, 1000);
-    }).catch(() => {});
+    if (pollingTimer) {
+      clearInterval(pollingTimer);
+      pollingTimer = null;
+    }
+    chrome.storage.local
+      .get("settings")
+      .then(({ settings }) => {
+        if (!settings?.intervalSeconds || !settings.enabled) return;
+        pollingTimer = setInterval(async () => {
+          if (overlayHost) return; // quiz already showing
+          try {
+            const { settings: s, lastShownAt } = await chrome.storage.local.get(
+              ["settings", "lastShownAt"],
+            );
+            if (!s?.enabled || !s.intervalSeconds) {
+              clearInterval(pollingTimer);
+              pollingTimer = null;
+              return;
+            }
+            const now = Date.now();
+            const elapsed = lastShownAt ? now - lastShownAt : Infinity;
+            if (elapsed >= s.intervalSeconds * 1000) {
+              // Claim the slot before sending to minimise duplicate triggers across tabs.
+              await chrome.storage.local.set({ lastShownAt: now });
+              chrome.runtime
+                .sendMessage({ type: "TRIGGER_NOW" })
+                .catch(() => {});
+            }
+          } catch (_) {}
+        }, 1000);
+      })
+      .catch(() => {});
   }
 
   setupPolling();
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.settings) setupPolling();
+    if (area === "local" && changes.settings) setupPolling();
   });
   // ─────────────────────────────────────────────────────────────────────────────
 
   function escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   }
 
   function normalize(str) {
-    return str.toLowerCase().trim()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd')
-      .replace(/\s+/g, ' ');
+    return str
+      .toLowerCase()
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/\s+/g, " ");
   }
 
   function checkAnswer(input, correct) {
@@ -56,38 +68,67 @@
   }
 
   function buildSentenceHTML(sentence, englishWord, direction) {
-    if (!sentence) return '';
-    const regex = new RegExp(escapeRegex(englishWord), 'gi');
-    if (direction === 'en-to-vn') {
-      return sentence.replace(regex, m => `<span class="word-highlight">${m}</span>`);
+    if (!sentence) return "";
+    const regex = new RegExp(escapeRegex(englishWord), "gi");
+    if (direction === "en-to-vn") {
+      return sentence.replace(
+        regex,
+        (m) => `<span class="word-highlight">${m}</span>`,
+      );
     } else {
       return sentence.replace(regex, '<span class="word-blank">___</span>');
     }
   }
 
   function difficultyClass(d) {
-    return { B1: 'diff-b1', B2: 'diff-b2', C1: 'diff-c1', C2: 'diff-c2' }[d] || 'diff-b1';
+    return (
+      { B1: "diff-b1", B2: "diff-b2", C1: "diff-c1", C2: "diff-c2" }[d] ||
+      "diff-b1"
+    );
   }
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === 'SHOW_WORD_SESSION') {
-      showSession(message.questions, message.streak || 0, message.sessionTimeoutSeconds ?? 90);
+    if (message.type === "SHOW_WORD_SESSION") {
+      showSession(
+        message.questions,
+        message.streak || 0,
+        message.sessionTimeoutSeconds ?? 90,
+      );
       sendResponse({ ok: true });
     }
-    if (message.type === 'SHOW_WORD_QUIZ') {
-      showSession([{ word: message.word, direction: 'en-to-vn', answerType: 'choice', options: message.options }], 0, 90);
+    if (message.type === "SHOW_WORD_QUIZ") {
+      showSession(
+        [
+          {
+            word: message.word,
+            direction: "en-to-vn",
+            answerType: "choice",
+            options: message.options,
+          },
+        ],
+        0,
+        90,
+      );
       sendResponse({ ok: true });
     }
     return true;
   });
 
   function showSession(questions, initialStreak, timeoutSeconds) {
-    if (overlayHost) { overlayHost.remove(); overlayHost = null; }
+    if (overlayHost) {
+      overlayHost.remove();
+      overlayHost = null;
+    }
     if (!questions || questions.length === 0) return;
 
-    overlayHost = document.createElement('div');
-    overlayHost.id = 'lnw-host';
-    Object.assign(overlayHost.style, { position: 'fixed', inset: '0', zIndex: '2147483647', pointerEvents: 'auto' });
+    overlayHost = document.createElement("div");
+    overlayHost.id = "lnw-host";
+    Object.assign(overlayHost.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "2147483647",
+      pointerEvents: "auto",
+    });
     document.body.appendChild(overlayHost);
 
     // Prevent page-level keydown capture listeners (e.g. YouTube, SPAs with hotkeys)
@@ -95,13 +136,13 @@
     const keydownCapture = (e) => {
       if (e.composedPath().includes(overlayHost)) e.stopPropagation();
     };
-    window.addEventListener('keydown', keydownCapture, true);
+    window.addEventListener("keydown", keydownCapture, true);
     overlayHost._keydownCapture = keydownCapture;
 
-    const shadow = overlayHost.attachShadow({ mode: 'open' });
+    const shadow = overlayHost.attachShadow({ mode: "open" });
     shadow.innerHTML = `<style>${getStyles()}</style><div id="backdrop"><div id="card"></div></div>`;
 
-    const card = shadow.getElementById('card');
+    const card = shadow.getElementById("card");
 
     const state = {
       questions,
@@ -110,7 +151,7 @@
       results: [],
       firstAttempt: true,
       timeoutSeconds,
-      timeoutTimer: null
+      timeoutTimer: null,
     };
 
     renderQuestion(card, shadow, state);
@@ -122,78 +163,104 @@
     if (!secs || secs <= 0) return;
 
     // Animate bar
-    const bar = shadow.getElementById('timeout-bar-fill');
+    const bar = shadow.getElementById("timeout-bar-fill");
     if (bar) {
-      bar.style.transition = 'none';
-      bar.style.width = '100%';
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        bar.style.transition = `width ${secs}s linear`;
-        bar.style.width = '0%';
-      }));
+      bar.style.transition = "none";
+      bar.style.width = "100%";
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          bar.style.transition = `width ${secs}s linear`;
+          bar.style.width = "0%";
+        }),
+      );
     }
 
     state.timeoutTimer = setTimeout(() => closeOverlay(), secs * 1000);
   }
 
   function clearSessionTimeout(state) {
-    if (state.timeoutTimer) { clearTimeout(state.timeoutTimer); state.timeoutTimer = null; }
+    if (state.timeoutTimer) {
+      clearTimeout(state.timeoutTimer);
+      state.timeoutTimer = null;
+    }
   }
 
   function renderQuestion(card, shadow, state) {
-    if (card._keyHandler) { document.removeEventListener('keydown', card._keyHandler); card._keyHandler = null; }
+    if (card._keyHandler) {
+      document.removeEventListener("keydown", card._keyHandler);
+      card._keyHandler = null;
+    }
 
     const { questions, index, streak, timeoutSeconds } = state;
     const { word, direction, answerType, options } = questions[index];
     const total = questions.length;
 
-    const promptLabel = direction === 'en-to-vn' ? 'Từ tiếng Anh:' : 'Từ tiếng Việt:';
-    const displayWord = direction === 'en-to-vn' ? word.english : word.vietnamese;
-    const correctAnswer = direction === 'en-to-vn' ? word.vietnamese : word.english;
-    const sentenceHTML = buildSentenceHTML(word.exampleSentence, word.english, direction);
-    const answerLabel = direction === 'en-to-vn' ? 'Nghĩa tiếng Việt là:' : 'Từ tiếng Anh là:';
+    const promptLabel =
+      direction === "en-to-vn" ? "Từ tiếng Anh:" : "Từ tiếng Việt:";
+    const displayWord =
+      direction === "en-to-vn" ? word.english : word.vietnamese;
+    const correctAnswer =
+      direction === "en-to-vn" ? word.vietnamese : word.english;
+    const sentenceHTML = buildSentenceHTML(
+      word.exampleSentence,
+      word.english,
+      direction,
+    );
+    const answerLabel =
+      direction === "en-to-vn" ? "Nghĩa tiếng Việt là:" : "Từ tiếng Anh là:";
 
     state.firstAttempt = true;
 
     card.innerHTML = `
-      ${timeoutSeconds > 0 ? '<div id="timeout-bar"><div id="timeout-bar-fill"></div></div>' : ''}
+      ${timeoutSeconds > 0 ? '<div id="timeout-bar"><div id="timeout-bar-fill"></div></div>' : ""}
       <div id="top-bar">
         <div id="progress">${index + 1} / ${total}</div>
         <div id="badges">
-          ${word.difficulty ? `<span class="badge ${difficultyClass(word.difficulty)}">${word.difficulty}</span>` : ''}
-          ${word.category ? `<span class="badge cat-badge">${word.category}</span>` : ''}
+          ${word.difficulty ? `<span class="badge ${difficultyClass(word.difficulty)}">${word.difficulty}</span>` : ""}
+          ${word.category ? `<span class="badge cat-badge">${word.category}</span>` : ""}
         </div>
       </div>
 
       <div id="prompt-label">${promptLabel}</div>
       <div id="word-display">
         ${displayWord}
-        ${direction === 'en-to-vn' ? `<button id="speak-btn" title="Phát âm">🔊</button>` : ''}
+        ${direction === "en-to-vn" ? `<button id="speak-btn" title="Phát âm">🔊</button>` : ""}
       </div>
 
-      ${word.exampleSentence ? `
+      ${
+        word.exampleSentence
+          ? `
         <div id="sentence-area">
           <div id="sentence">"${sentenceHTML}"</div>
-          ${word.englishMeaning ? `<button id="hint-btn">💡 Gợi ý</button><div id="hint-text" hidden>${word.englishMeaning}</div>` : ''}
+          ${word.englishMeaning ? `<button id="hint-btn">💡 Gợi ý</button><div id="hint-text" hidden>${word.englishMeaning}</div>` : ""}
         </div>
-      ` : (word.englishMeaning ? `
+      `
+          : word.englishMeaning
+            ? `
         <div id="sentence-area">
           <button id="hint-btn">💡 Gợi ý</button>
           <div id="hint-text" hidden>${word.englishMeaning}</div>
         </div>
-      ` : '')}
+      `
+            : ""
+      }
 
       <div id="answer-label">${answerLabel}</div>
 
-      ${answerType === 'choice' ? `
+      ${
+        answerType === "choice"
+          ? `
         <div id="options-grid">
-          ${(options || []).map(opt => `<button class="option" data-value="${escAttr(opt)}">${opt}</button>`).join('')}
+          ${(options || []).map((opt) => `<button class="option" data-value="${escAttr(opt)}">${opt}</button>`).join("")}
         </div>
-      ` : `
+      `
+          : `
         <div id="typing-area">
-          <input type="text" id="answer-input" placeholder="${direction === 'en-to-vn' ? 'Gõ nghĩa tiếng Việt...' : 'Type the English word...'}" autocomplete="off" spellcheck="false" />
+          <input type="text" id="answer-input" placeholder="${direction === "en-to-vn" ? "Gõ nghĩa tiếng Việt..." : "Type the English word..."}" autocomplete="off" spellcheck="false" />
           <button id="check-btn">Kiểm tra</button>
         </div>
-      `}
+      `
+      }
 
       <div id="error-msg" hidden></div>
       <button id="known-btn">✓ Tôi đã biết từ này rồi</button>
@@ -205,101 +272,148 @@
     `;
 
     // Next-popup countdown
-    chrome.runtime.sendMessage({ type: 'GET_NEXT_ALARM' }).then(({ scheduledTime }) => {
-      const el = shadow.getElementById('countdown-display');
-      if (!el || !scheduledTime) return;
-      const tick = () => {
-        const r = scheduledTime - Date.now();
-        if (r <= 0) { el.textContent = ''; return; }
-        const m = Math.floor(r / 60000), s = Math.floor((r % 60000) / 1000);
-        el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
-      };
-      tick();
-      const iv = setInterval(() => { if (!overlayHost?.isConnected) { clearInterval(iv); return; } tick(); }, 1000);
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({ type: "GET_NEXT_ALARM" })
+      .then(({ scheduledTime }) => {
+        const el = shadow.getElementById("countdown-display");
+        if (!el || !scheduledTime) return;
+        const tick = () => {
+          const r = scheduledTime - Date.now();
+          if (r <= 0) {
+            el.textContent = "";
+            return;
+          }
+          const m = Math.floor(r / 60000),
+            s = Math.floor((r % 60000) / 1000);
+          el.textContent = `${m}:${s.toString().padStart(2, "0")}`;
+        };
+        tick();
+        if (countdownIv) clearInterval(countdownIv);
+        countdownIv = setInterval(() => {
+          if (!overlayHost?.isConnected) {
+            clearInterval(countdownIv);
+            countdownIv = null;
+            return;
+          }
+          tick();
+        }, 1000);
+      })
+      .catch(() => {});
 
     // Auto-close timeout
     startTimeout(card, shadow, state);
 
     // Hint
-    const hintBtn = shadow.getElementById('hint-btn');
-    const hintText = shadow.getElementById('hint-text');
+    const hintBtn = shadow.getElementById("hint-btn");
+    const hintText = shadow.getElementById("hint-text");
     // Speak button
-    const speakBtn = shadow.getElementById('speak-btn');
+    const speakBtn = shadow.getElementById("speak-btn");
     if (speakBtn) {
       const speak = () => {
         speechSynthesis.cancel();
         const utt = new SpeechSynthesisUtterance(word.english);
-        utt.lang = 'en-US';
+        utt.lang = "en-US";
         speechSynthesis.speak(utt);
       };
-      speakBtn.addEventListener('click', speak);
+      speakBtn.addEventListener("click", speak);
       speak(); // auto-play on first render
     }
 
     if (hintBtn && hintText) {
-      hintBtn.addEventListener('click', () => { hintText.hidden = false; hintBtn.textContent = '💡 Đã dùng gợi ý'; hintBtn.disabled = true; });
+      hintBtn.addEventListener("click", () => {
+        hintText.hidden = false;
+        hintBtn.textContent = "💡 Đã dùng gợi ý";
+        hintBtn.disabled = true;
+      });
     }
 
     // Mark as known
-    shadow.getElementById('known-btn')?.addEventListener('click', () => {
+    shadow.getElementById("known-btn")?.addEventListener("click", () => {
       clearSessionTimeout(state);
-      chrome.runtime.sendMessage({ type: 'MARK_KNOWN', wordId: word.id }).catch(() => {});
+      chrome.runtime
+        .sendMessage({ type: "MARK_KNOWN", wordId: word.id })
+        .catch(() => {});
       state.index++;
       if (state.index < questions.length) renderQuestion(card, shadow, state);
       else renderSummary(card, shadow, state);
     });
 
     // Answer handlers
-    if (answerType === 'choice') {
-      shadow.querySelectorAll('.option').forEach(btn => {
-        btn.addEventListener('click', () => handleChoiceAnswer(btn.dataset.value, correctAnswer, card, shadow, state));
+    if (answerType === "choice") {
+      shadow.querySelectorAll(".option").forEach((btn) => {
+        btn.addEventListener("click", () =>
+          handleChoiceAnswer(
+            btn.dataset.value,
+            correctAnswer,
+            card,
+            shadow,
+            state,
+          ),
+        );
       });
-      const keyHandler = e => {
-        const idx = ['1','2','3','4'].indexOf(e.key);
-        if (idx !== -1) { const btns = shadow.querySelectorAll('.option'); if (btns[idx]) btns[idx].click(); }
+      const keyHandler = (e) => {
+        const idx = ["1", "2", "3", "4"].indexOf(e.key);
+        if (idx !== -1) {
+          const btns = shadow.querySelectorAll(".option");
+          if (btns[idx]) btns[idx].click();
+        }
       };
-      document.addEventListener('keydown', keyHandler);
+      document.addEventListener("keydown", keyHandler);
       card._keyHandler = keyHandler;
     } else {
-      const input = shadow.getElementById('answer-input');
-      const checkBtn = shadow.getElementById('check-btn');
-      const submit = () => handleTypingAnswer(input.value, correctAnswer, card, shadow, state);
-      checkBtn?.addEventListener('click', submit);
-      input?.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+      const input = shadow.getElementById("answer-input");
+      const checkBtn = shadow.getElementById("check-btn");
+      const submit = () =>
+        handleTypingAnswer(input.value, correctAnswer, card, shadow, state);
+      checkBtn?.addEventListener("click", submit);
+      input?.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") submit();
+      });
       setTimeout(() => input?.focus(), 50);
     }
   }
 
   function escAttr(str) {
-    return str.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return str.replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
   function handleChoiceAnswer(selected, correct, card, shadow, state) {
     const isCorrect = selected === correct;
-    shadow.querySelectorAll('.option').forEach(btn => {
+    shadow.querySelectorAll(".option").forEach((btn) => {
       btn.disabled = true;
-      if (btn.dataset.value === correct) btn.classList.add('correct');
-      else if (btn.dataset.value === selected && !isCorrect) btn.classList.add('wrong');
+      if (btn.dataset.value === correct) btn.classList.add("correct");
+      else if (btn.dataset.value === selected && !isCorrect)
+        btn.classList.add("wrong");
     });
     if (isCorrect) onCorrect(card, shadow, state);
-    else onWrong(card, shadow, state, () => {
-      shadow.querySelectorAll('.option').forEach(btn => { btn.disabled = false; btn.classList.remove('correct', 'wrong'); });
-    });
+    else
+      onWrong(card, shadow, state, () => {
+        shadow.querySelectorAll(".option").forEach((btn) => {
+          btn.disabled = false;
+          btn.classList.remove("correct", "wrong");
+        });
+      });
   }
 
   function handleTypingAnswer(input, correct, card, shadow, state) {
     const isCorrect = checkAnswer(input, correct);
-    const inputEl = shadow.getElementById('answer-input');
+    const inputEl = shadow.getElementById("answer-input");
     if (isCorrect) {
-      if (inputEl) { inputEl.disabled = true; inputEl.classList.add('input-correct'); }
-      const checkBtn = shadow.getElementById('check-btn');
+      if (inputEl) {
+        inputEl.disabled = true;
+        inputEl.classList.add("input-correct");
+      }
+      const checkBtn = shadow.getElementById("check-btn");
       if (checkBtn) checkBtn.disabled = true;
       onCorrect(card, shadow, state);
     } else {
       if (inputEl) {
-        inputEl.classList.add('input-wrong', 'shake');
-        setTimeout(() => { inputEl.classList.remove('shake', 'input-wrong'); inputEl.value = ''; inputEl.focus(); }, 600);
+        inputEl.classList.add("input-wrong", "shake");
+        setTimeout(() => {
+          inputEl.classList.remove("shake", "input-wrong");
+          inputEl.value = "";
+          inputEl.focus();
+        }, 600);
       }
       onWrong(card, shadow, state, null);
     }
@@ -313,19 +427,34 @@
     state.results.push(true);
     state.streak = streak + 1;
 
-    chrome.runtime.sendMessage({ type: 'RECORD_ANSWER', wordId: word.id, correct: true, isFirstAttempt: true }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        type: "RECORD_ANSWER",
+        wordId: word.id,
+        correct: true,
+        isFirstAttempt: true,
+      })
+      .catch(() => {});
 
-    const errorEl = shadow.getElementById('error-msg');
-    if (errorEl) { errorEl.hidden = false; errorEl.className = 'success-msg'; errorEl.textContent = '✓ Chính xác!'; }
+    const errorEl = shadow.getElementById("error-msg");
+    if (errorEl) {
+      errorEl.hidden = false;
+      errorEl.className = "success-msg";
+      errorEl.textContent = "✓ Chính xác!";
+    }
 
-    const streakEl = shadow.getElementById('streak-display');
-    if (streakEl) streakEl.innerHTML = `🔥 Streak: <strong>${state.streak}</strong>`;
+    const streakEl = shadow.getElementById("streak-display");
+    if (streakEl)
+      streakEl.innerHTML = `🔥 Streak: <strong>${state.streak}</strong>`;
 
     // Disable "known" button during advance
-    const knownBtn = shadow.getElementById('known-btn');
+    const knownBtn = shadow.getElementById("known-btn");
     if (knownBtn) knownBtn.disabled = true;
 
-    if (card._keyHandler) { document.removeEventListener('keydown', card._keyHandler); card._keyHandler = null; }
+    if (card._keyHandler) {
+      document.removeEventListener("keydown", card._keyHandler);
+      card._keyHandler = null;
+    }
 
     setTimeout(() => {
       state.index++;
@@ -338,15 +467,26 @@
     const { questions, index } = state;
     const { word } = questions[index];
 
-    const errorEl = shadow.getElementById('error-msg');
-    if (errorEl) { errorEl.hidden = false; errorEl.className = ''; errorEl.textContent = 'Sai rồi! Thử lại nhé 💪'; }
+    const errorEl = shadow.getElementById("error-msg");
+    if (errorEl) {
+      errorEl.hidden = false;
+      errorEl.className = "";
+      errorEl.textContent = "Sai rồi! Thử lại nhé 💪";
+    }
 
     if (state.firstAttempt) {
       state.firstAttempt = false;
       state.results.push(false);
-      chrome.runtime.sendMessage({ type: 'RECORD_ANSWER', wordId: word.id, correct: false, isFirstAttempt: true }).catch(() => {});
+      chrome.runtime
+        .sendMessage({
+          type: "RECORD_ANSWER",
+          wordId: word.id,
+          correct: false,
+          isFirstAttempt: true,
+        })
+        .catch(() => {});
       state.streak = 0;
-      const streakEl = shadow.getElementById('streak-display');
+      const streakEl = shadow.getElementById("streak-display");
       if (streakEl) streakEl.innerHTML = `🔥 Streak: <strong>0</strong>`;
     }
 
@@ -354,15 +494,24 @@
   }
 
   function renderSummary(card, shadow, state) {
-    if (card._keyHandler) { document.removeEventListener('keydown', card._keyHandler); card._keyHandler = null; }
+    if (card._keyHandler) {
+      document.removeEventListener("keydown", card._keyHandler);
+      card._keyHandler = null;
+    }
 
     const total = state.results.length;
     const correct = state.results.filter(Boolean).length;
-    const icons = state.results.map(r => r ? '<span class="res-correct">✓</span>' : '<span class="res-wrong">✗</span>').join('');
+    const icons = state.results
+      .map((r) =>
+        r
+          ? '<span class="res-correct">✓</span>'
+          : '<span class="res-wrong">✗</span>',
+      )
+      .join("");
 
     card.innerHTML = `
       <div id="summary">
-        <div id="summary-emoji">${correct === total ? '🎉' : correct >= total / 2 ? '👍' : '💪'}</div>
+        <div id="summary-emoji">${correct === total ? "🎉" : correct >= total / 2 ? "👍" : "💪"}</div>
         <div id="summary-title">Hoàn thành buổi học!</div>
         <div id="summary-icons">${icons}</div>
         <div id="summary-score">Đúng: <strong>${correct}</strong> / ${total}</div>
@@ -371,28 +520,44 @@
       </div>
     `;
 
-    shadow.getElementById('continue-btn')?.addEventListener('click', closeOverlay);
+    shadow
+      .getElementById("continue-btn")
+      ?.addEventListener("click", closeOverlay);
 
-    const keyHandler = e => { if (e.key === 'Enter' || e.key === 'Escape') closeOverlay(); };
-    document.addEventListener('keydown', keyHandler);
+    const keyHandler = (e) => {
+      if (e.key === "Enter" || e.key === "Escape") closeOverlay();
+    };
+    document.addEventListener("keydown", keyHandler);
     card._keyHandler = keyHandler;
 
-    shadow.getElementById('backdrop')?.addEventListener('click', e => {
-      if (e.target === shadow.getElementById('backdrop')) closeOverlay();
+    shadow.getElementById("backdrop")?.addEventListener("click", (e) => {
+      if (e.target === shadow.getElementById("backdrop")) closeOverlay();
     });
   }
 
   function closeOverlay() {
+    if (countdownIv) {
+      clearInterval(countdownIv);
+      countdownIv = null;
+    }
     if (overlayHost) {
       if (overlayHost._keydownCapture) {
-        window.removeEventListener('keydown', overlayHost._keydownCapture, true);
+        window.removeEventListener(
+          "keydown",
+          overlayHost._keydownCapture,
+          true,
+        );
       }
-      chrome.runtime.sendMessage({ type: 'SESSION_ENDED' }).catch(() => {});
-      const card = overlayHost.shadowRoot?.getElementById('card');
-      if (card?._keyHandler) document.removeEventListener('keydown', card._keyHandler);
-      overlayHost.style.opacity = '0';
-      overlayHost.style.transition = 'opacity 0.2s ease';
-      setTimeout(() => { overlayHost?.remove(); overlayHost = null; }, 220);
+      chrome.runtime.sendMessage({ type: "SESSION_ENDED" }).catch(() => {});
+      const card = overlayHost.shadowRoot?.getElementById("card");
+      if (card?._keyHandler)
+        document.removeEventListener("keydown", card._keyHandler);
+      overlayHost.style.opacity = "0";
+      overlayHost.style.transition = "opacity 0.2s ease";
+      setTimeout(() => {
+        overlayHost?.remove();
+        overlayHost = null;
+      }, 220);
     }
   }
 
@@ -504,11 +669,18 @@
   // When loaded inside the standalone quiz window (quiz.html), chrome.tabs.sendMessage
   // cannot reach extension pages, so the session is stored in storage instead.
   // Use the full extension URL to avoid false-positives on web pages named quiz.html.
-  if (location.href === chrome.runtime.getURL('quiz.html')) {
-    chrome.storage.local.get('pendingQuizSession').then(({ pendingQuizSession }) => {
-      if (!pendingQuizSession) return;
-      chrome.storage.local.remove('pendingQuizSession');
-      showSession(pendingQuizSession.questions, pendingQuizSession.streak, pendingQuizSession.sessionTimeoutSeconds ?? 90);
-    }).catch(() => {});
+  if (location.href === chrome.runtime.getURL("quiz.html")) {
+    chrome.storage.local
+      .get("pendingQuizSession")
+      .then(({ pendingQuizSession }) => {
+        if (!pendingQuizSession) return;
+        chrome.storage.local.remove("pendingQuizSession");
+        showSession(
+          pendingQuizSession.questions,
+          pendingQuizSession.streak,
+          pendingQuizSession.sessionTimeoutSeconds ?? 90,
+        );
+      })
+      .catch(() => {});
   }
 })();
