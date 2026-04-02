@@ -282,7 +282,7 @@ document
   .addEventListener("click", async () => {
     if (
       !confirm(
-        "Đặt lại tất cả thống kê và tiến độ học?\nThao tác này không thể hoàn tác.",
+        "Đặt lại tất cả thống kê và tiến độ học?\nThao tác này không thể hoàn tác",
       )
     )
       return;
