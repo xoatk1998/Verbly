@@ -1,0 +1,51 @@
+name: LearnNewWords
+options:
+  bundleIdPrefix: com.learnNewWords
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    PRODUCT_BUNDLE_IDENTIFIER: com.learnNewWords.LearnNewWords
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+
+targets:
+  LearnNewWords:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: LearnNewWords
+        excludes:
+          - "**/*.md"
+    resources:
+      - path: LearnNewWords/Resources
+    settings:
+      base:
+        INFOPLIST_FILE: LearnNewWords/App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: LearnNewWords/App/LearnNewWords.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    entitlements:
+      path: LearnNewWords/App/LearnNewWords.entitlements
+      properties:
+        com.apple.security.app-sandbox: true
+        com.apple.security.files.user-selected.read-only: true
+
+  LearnNewWordsTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: LearnNewWordsTests
+    dependencies:
+      - target: LearnNewWords
+    settings:
+      base:
+        INFOPLIST_FILE: ""

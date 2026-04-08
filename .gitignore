@@ -1,0 +1,14 @@
+.claude
+
+# Xcode user-specific state (not shared between developers)
+*.xcuserstate
+xcuserdata/
+
+# Xcode build artifacts
+build/
+DerivedData/
+*.o
+*.d
+
+# macOS
+.DS_Store

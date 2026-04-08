@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Hide from Dock — this is a menu bar only app -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <key>CFBundleDisplayName</key>
+    <string>Learn New Words</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.learnNewWords.LearnNewWords</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.education</string>
+
+    <key>NSHumanReadableCopyright</key>
+    <string>Learn New Words</string>
+
+    <!-- Microphone not needed; only speech output -->
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Not required</string>
+</dict>
+</plist>

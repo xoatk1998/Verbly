@@ -1,0 +1,586 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C3803BBCB0AEBDEC8F634EE /* WordRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3367C61F92DE612954A27963 /* WordRowView.swift */; };
+		1DC130C0D0D984F958EDB894 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7DE63F2A72283744036D78 /* StatsView.swift */; };
+		1EC821E27C7D37C0D4F82A18 /* CSVImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9B71F15548283BBC8C3A9E8 /* CSVImportService.swift */; };
+		24CE2FA02BF9670CF9267592 /* TypingAnswerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE021352329EA34DED98E7F0 /* TypingAnswerView.swift */; };
+		3B7B69EEE695F80D9D21BB1D /* LearnNewWordsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAA6846B8DDF53111C3B596C /* LearnNewWordsApp.swift */; };
+		3CC1C9267C9ED52C15FDD247 /* AppStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = 451F5525C22140BB66830937 /* AppStats.swift */; };
+		3D662A61959B284B2FE134D3 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D6697E5CDFEF839B1622F7 /* AppSettings.swift */; };
+		40F12CE087FAD214B80F9E43 /* WordsListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59A0DCD0A5E7D2C076FDB623 /* WordsListView.swift */; };
+		5164DDB2779B2EE84F42C23D /* QuizViewDismissTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 295737E76CF22DD9284015FB /* QuizViewDismissTests.swift */; };
+		5A2AC59C59D1E8B4FE870A9E /* sample.csv in Resources */ = {isa = PBXBuildFile; fileRef = 39F51CB628CE5AC4ACA4C450 /* sample.csv */; };
+		5C82FF632E2955AC60CF0352 /* QuizView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1EDA3031CFA08BF64A4D0F /* QuizView.swift */; };
+		654B20BE5F879DDB33690791 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9C4FE23BD629680407CB0A1 /* SettingsView.swift */; };
+		69CEAB9E18FCEA876238957D /* CSVImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8072C96D482515C32EF3C6C6 /* CSVImportTests.swift */; };
+		6BE3C337667D4C47903387D9 /* AddWordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89EB4ED8B7B682A338DCF814 /* AddWordView.swift */; };
+		843D8325BCB03BB43E9D8BD4 /* QuizScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5725279E5AE93A5378710843 /* QuizScheduler.swift */; };
+		85D05435B5525C161A3CB1F3 /* SpacedRepetitionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8ECD5021E74C9C8F21D291D4 /* SpacedRepetitionTests.swift */; };
+		999DBFAC9607B2C271BEDEFD /* MenuBarPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A904CAC01EFEB0EBABC57FD /* MenuBarPopoverView.swift */; };
+		A0859815A259C4B3C2C4AAAE /* MultipleChoiceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56CD7F8F1061F98A47DD1462 /* MultipleChoiceView.swift */; };
+		A385BB9DDE163D63B6803168 /* PlaceholderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E7F3133B8F4C13F1EFCE9CE /* PlaceholderTests.swift */; };
+		B63FFDDA9FE5FC219FE05817 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 312539345391B0EEEB0BE5DA /* AppDelegate.swift */; };
+		C9808D8A488849E5FD7762FA /* SpacedRepetitionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A721DACD94626C741CE6D681 /* SpacedRepetitionEngine.swift */; };
+		CBC9355AD08C356F4CB71069 /* QuizSessionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DDCF2F6C249029B7FC43A4 /* QuizSessionBuilder.swift */; };
+		E070ED70267EAF8AE37B03C0 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68DA9554BFA876CA09C885C0 /* SpeechService.swift */; };
+		ED4322C40E478C6CA8B8AAFD /* QuizWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */; };
+		F4A659DA6060E0C9250E234E /* QuizProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D734FFD3FF0A14FD4B56495 /* QuizProgressBarView.swift */; };
+		FF591B088EA4125AD5009F04 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78E229819883AE71C7097B2 /* Word.swift */; };
+		FFAE6391E0176E9DD78F08A9 /* AllWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE47DED5ABEF73EABA4C707 /* AllWordsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		70BF98483C03E57D8FDB23A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 03A3ED4C1E18EA4B982B426C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F7C64EE15D89640C11A42C39;
+			remoteInfo = LearnNewWords;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0E7F3133B8F4C13F1EFCE9CE /* PlaceholderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTests.swift; sourceTree = "<group>"; };
+		0FE47DED5ABEF73EABA4C707 /* AllWordsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllWordsView.swift; sourceTree = "<group>"; };
+		295737E76CF22DD9284015FB /* QuizViewDismissTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizViewDismissTests.swift; sourceTree = "<group>"; };
+		312539345391B0EEEB0BE5DA /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		3367C61F92DE612954A27963 /* WordRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordRowView.swift; sourceTree = "<group>"; };
+		39F51CB628CE5AC4ACA4C450 /* sample.csv */ = {isa = PBXFileReference; path = sample.csv; sourceTree = "<group>"; };
+		3A904CAC01EFEB0EBABC57FD /* MenuBarPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPopoverView.swift; sourceTree = "<group>"; };
+		3C2FBE874FC6E30CBC70760F /* LearnNewWords.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LearnNewWords.entitlements; sourceTree = "<group>"; };
+		451F5525C22140BB66830937 /* AppStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStats.swift; sourceTree = "<group>"; };
+		45DDCF2F6C249029B7FC43A4 /* QuizSessionBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizSessionBuilder.swift; sourceTree = "<group>"; };
+		4D734FFD3FF0A14FD4B56495 /* QuizProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizProgressBarView.swift; sourceTree = "<group>"; };
+		56CD7F8F1061F98A47DD1462 /* MultipleChoiceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipleChoiceView.swift; sourceTree = "<group>"; };
+		5725279E5AE93A5378710843 /* QuizScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizScheduler.swift; sourceTree = "<group>"; };
+		59A0DCD0A5E7D2C076FDB623 /* WordsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordsListView.swift; sourceTree = "<group>"; };
+		68DA9554BFA876CA09C885C0 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
+		79E47B33630966C71CFA1CF4 /* LearnNewWords.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnNewWords.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B1EDA3031CFA08BF64A4D0F /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
+		8072C96D482515C32EF3C6C6 /* CSVImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportTests.swift; sourceTree = "<group>"; };
+		89EB4ED8B7B682A338DCF814 /* AddWordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddWordView.swift; sourceTree = "<group>"; };
+		8ECD5021E74C9C8F21D291D4 /* SpacedRepetitionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionTests.swift; sourceTree = "<group>"; };
+		94D6697E5CDFEF839B1622F7 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		A721DACD94626C741CE6D681 /* SpacedRepetitionEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpacedRepetitionEngine.swift; sourceTree = "<group>"; };
+		A78E229819883AE71C7097B2 /* Word.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
+		AE021352329EA34DED98E7F0 /* TypingAnswerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypingAnswerView.swift; sourceTree = "<group>"; };
+		AED32D14B3833654D3C819C6 /* LearnNewWordsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnNewWordsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B9C4FE23BD629680407CB0A1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizWindowController.swift; sourceTree = "<group>"; };
+		D711DE2EEAC797F3C011F167 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D9B71F15548283BBC8C3A9E8 /* CSVImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportService.swift; sourceTree = "<group>"; };
+		DC7DE63F2A72283744036D78 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		EAA6846B8DDF53111C3B596C /* LearnNewWordsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnNewWordsApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		083E782FC96D441E9D238231 = {
+			isa = PBXGroup;
+			children = (
+				A5DC7577B29A22B0AC616B51 /* LearnNewWords */,
+				45015FC4818F5FEB3724393E /* LearnNewWordsTests */,
+				B9816FED87F324F8BF5B97BE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		23B9096659F05F974537FA3D /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				5725279E5AE93A5378710843 /* QuizScheduler.swift */,
+				45DDCF2F6C249029B7FC43A4 /* QuizSessionBuilder.swift */,
+				A721DACD94626C741CE6D681 /* SpacedRepetitionEngine.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+		32423C72F4AF05A03EA35663 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				4D734FFD3FF0A14FD4B56495 /* QuizProgressBarView.swift */,
+				3367C61F92DE612954A27963 /* WordRowView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		45015FC4818F5FEB3724393E /* LearnNewWordsTests */ = {
+			isa = PBXGroup;
+			children = (
+				8072C96D482515C32EF3C6C6 /* CSVImportTests.swift */,
+				0E7F3133B8F4C13F1EFCE9CE /* PlaceholderTests.swift */,
+				295737E76CF22DD9284015FB /* QuizViewDismissTests.swift */,
+				8ECD5021E74C9C8F21D291D4 /* SpacedRepetitionTests.swift */,
+			);
+			path = LearnNewWordsTests;
+			sourceTree = "<group>";
+		};
+		4622A35631D27C8AD1EA6AAF /* App */ = {
+			isa = PBXGroup;
+			children = (
+				312539345391B0EEEB0BE5DA /* AppDelegate.swift */,
+				D711DE2EEAC797F3C011F167 /* Info.plist */,
+				3C2FBE874FC6E30CBC70760F /* LearnNewWords.entitlements */,
+				EAA6846B8DDF53111C3B596C /* LearnNewWordsApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9CB2D28DB27C29A3071BC682 /* Management */ = {
+			isa = PBXGroup;
+			children = (
+				89EB4ED8B7B682A338DCF814 /* AddWordView.swift */,
+				0FE47DED5ABEF73EABA4C707 /* AllWordsView.swift */,
+				3A904CAC01EFEB0EBABC57FD /* MenuBarPopoverView.swift */,
+				B9C4FE23BD629680407CB0A1 /* SettingsView.swift */,
+				DC7DE63F2A72283744036D78 /* StatsView.swift */,
+				59A0DCD0A5E7D2C076FDB623 /* WordsListView.swift */,
+			);
+			path = Management;
+			sourceTree = "<group>";
+		};
+		A5DC7577B29A22B0AC616B51 /* LearnNewWords */ = {
+			isa = PBXGroup;
+			children = (
+				4622A35631D27C8AD1EA6AAF /* App */,
+				23B9096659F05F974537FA3D /* Engine */,
+				E1B9E24204AB4069E10C1F08 /* Models */,
+				E539CAE3ADEDFB48FD041C64 /* Resources */,
+				DF9AE8B293CF1E46BB0C0135 /* Services */,
+				E0D696C1A11A616AFF402F1E /* Views */,
+			);
+			path = LearnNewWords;
+			sourceTree = "<group>";
+		};
+		B9816FED87F324F8BF5B97BE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				79E47B33630966C71CFA1CF4 /* LearnNewWords.app */,
+				AED32D14B3833654D3C819C6 /* LearnNewWordsTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DF9AE8B293CF1E46BB0C0135 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D9B71F15548283BBC8C3A9E8 /* CSVImportService.swift */,
+				68DA9554BFA876CA09C885C0 /* SpeechService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		E0D696C1A11A616AFF402F1E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				32423C72F4AF05A03EA35663 /* Components */,
+				9CB2D28DB27C29A3071BC682 /* Management */,
+				FDB22007F25CA8249D040F85 /* Quiz */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		E1B9E24204AB4069E10C1F08 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				94D6697E5CDFEF839B1622F7 /* AppSettings.swift */,
+				451F5525C22140BB66830937 /* AppStats.swift */,
+				A78E229819883AE71C7097B2 /* Word.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		E539CAE3ADEDFB48FD041C64 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				39F51CB628CE5AC4ACA4C450 /* sample.csv */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FDB22007F25CA8249D040F85 /* Quiz */ = {
+			isa = PBXGroup;
+			children = (
+				56CD7F8F1061F98A47DD1462 /* MultipleChoiceView.swift */,
+				7B1EDA3031CFA08BF64A4D0F /* QuizView.swift */,
+				C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */,
+				AE021352329EA34DED98E7F0 /* TypingAnswerView.swift */,
+			);
+			path = Quiz;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F7C64EE15D89640C11A42C39 /* LearnNewWords */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3A4832D54087E79D2453886F /* Build configuration list for PBXNativeTarget "LearnNewWords" */;
+			buildPhases = (
+				DBD6A63A19F61B97D3F8BCCD /* Sources */,
+				143DBC10484416D3E774555A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LearnNewWords;
+			packageProductDependencies = (
+			);
+			productName = LearnNewWords;
+			productReference = 79E47B33630966C71CFA1CF4 /* LearnNewWords.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FE7C06CA14ADC72E8BA02285 /* LearnNewWordsTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 419C7FE575354C37929073CC /* Build configuration list for PBXNativeTarget "LearnNewWordsTests" */;
+			buildPhases = (
+				40DC5D0A696AF95DB85ED23F /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F6FD7007204AD188955FF026 /* PBXTargetDependency */,
+			);
+			name = LearnNewWordsTests;
+			packageProductDependencies = (
+			);
+			productName = LearnNewWordsTests;
+			productReference = AED32D14B3833654D3C819C6 /* LearnNewWordsTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		03A3ED4C1E18EA4B982B426C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					F7C64EE15D89640C11A42C39 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					FE7C06CA14ADC72E8BA02285 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = A0F640426756BE08463975A0 /* Build configuration list for PBXProject "LearnNewWords" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 083E782FC96D441E9D238231;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B9816FED87F324F8BF5B97BE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F7C64EE15D89640C11A42C39 /* LearnNewWords */,
+				FE7C06CA14ADC72E8BA02285 /* LearnNewWordsTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		143DBC10484416D3E774555A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A2AC59C59D1E8B4FE870A9E /* sample.csv in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		40DC5D0A696AF95DB85ED23F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				69CEAB9E18FCEA876238957D /* CSVImportTests.swift in Sources */,
+				A385BB9DDE163D63B6803168 /* PlaceholderTests.swift in Sources */,
+				5164DDB2779B2EE84F42C23D /* QuizViewDismissTests.swift in Sources */,
+				85D05435B5525C161A3CB1F3 /* SpacedRepetitionTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBD6A63A19F61B97D3F8BCCD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6BE3C337667D4C47903387D9 /* AddWordView.swift in Sources */,
+				FFAE6391E0176E9DD78F08A9 /* AllWordsView.swift in Sources */,
+				B63FFDDA9FE5FC219FE05817 /* AppDelegate.swift in Sources */,
+				3D662A61959B284B2FE134D3 /* AppSettings.swift in Sources */,
+				3CC1C9267C9ED52C15FDD247 /* AppStats.swift in Sources */,
+				1EC821E27C7D37C0D4F82A18 /* CSVImportService.swift in Sources */,
+				3B7B69EEE695F80D9D21BB1D /* LearnNewWordsApp.swift in Sources */,
+				999DBFAC9607B2C271BEDEFD /* MenuBarPopoverView.swift in Sources */,
+				A0859815A259C4B3C2C4AAAE /* MultipleChoiceView.swift in Sources */,
+				F4A659DA6060E0C9250E234E /* QuizProgressBarView.swift in Sources */,
+				843D8325BCB03BB43E9D8BD4 /* QuizScheduler.swift in Sources */,
+				CBC9355AD08C356F4CB71069 /* QuizSessionBuilder.swift in Sources */,
+				5C82FF632E2955AC60CF0352 /* QuizView.swift in Sources */,
+				ED4322C40E478C6CA8B8AAFD /* QuizWindowController.swift in Sources */,
+				654B20BE5F879DDB33690791 /* SettingsView.swift in Sources */,
+				C9808D8A488849E5FD7762FA /* SpacedRepetitionEngine.swift in Sources */,
+				E070ED70267EAF8AE37B03C0 /* SpeechService.swift in Sources */,
+				1DC130C0D0D984F958EDB894 /* StatsView.swift in Sources */,
+				24CE2FA02BF9670CF9267592 /* TypingAnswerView.swift in Sources */,
+				FF591B088EA4125AD5009F04 /* Word.swift in Sources */,
+				0C3803BBCB0AEBDEC8F634EE /* WordRowView.swift in Sources */,
+				40F12CE087FAD214B80F9E43 /* WordsListView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F6FD7007204AD188955FF026 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F7C64EE15D89640C11A42C39 /* LearnNewWords */;
+			targetProxy = 70BF98483C03E57D8FDB23A2 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		040AB1CFE333692A40021F2A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = LearnNewWords/App/LearnNewWords.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = LearnNewWords/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		05ECEF2D4E341F1170E0DCB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.learnNewWords.LearnNewWords;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		16583B03924D6B591872F4AB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LearnNewWords.app/Contents/MacOS/LearnNewWords";
+			};
+			name = Release;
+		};
+		193C1844FF65C29F144A63D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.learnNewWords.LearnNewWords;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		AC6C728193FDF59D8FDC1798 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = LearnNewWords/App/LearnNewWords.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = LearnNewWords/App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		DDA97089C8D7865677DDA963 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LearnNewWords.app/Contents/MacOS/LearnNewWords";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3A4832D54087E79D2453886F /* Build configuration list for PBXNativeTarget "LearnNewWords" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AC6C728193FDF59D8FDC1798 /* Debug */,
+				040AB1CFE333692A40021F2A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		419C7FE575354C37929073CC /* Build configuration list for PBXNativeTarget "LearnNewWordsTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDA97089C8D7865677DDA963 /* Debug */,
+				16583B03924D6B591872F4AB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		A0F640426756BE08463975A0 /* Build configuration list for PBXProject "LearnNewWords" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				193C1844FF65C29F144A63D8 /* Debug */,
+				05ECEF2D4E341F1170E0DCB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 03A3ED4C1E18EA4B982B426C /* Project object */;
+}
