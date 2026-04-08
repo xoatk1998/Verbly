@@ -22,8 +22,11 @@ final class Word {
     var nextReviewAt: Date?      // nil = due immediately (never reviewed)
     var addedAt: Date
     var isMastered: Bool
+    /// Example sentence in English. Fetched from Free Dictionary API or imported from CSV column 2.
+    /// Optional so SwiftData can lightweight-migrate existing stores (non-optional new columns crash).
+    var exampleSentence: String?
 
-    init(english: String, vietnamese: String, difficulty: String = "B1", category: String = "") {
+    init(english: String, vietnamese: String, difficulty: String = "B1", category: String = "", exampleSentence: String? = nil) {
         self.id = UUID().uuidString
         self.english = english
         self.vietnamese = vietnamese
@@ -34,6 +37,7 @@ final class Word {
         self.nextReviewAt = nil
         self.addedAt = Date()
         self.isMastered = false
+        self.exampleSentence = exampleSentence
     }
 
     /// Accuracy as a value from 0.0 to 1.0.

@@ -30,7 +30,9 @@
 		C9808D8A488849E5FD7762FA /* SpacedRepetitionEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A721DACD94626C741CE6D681 /* SpacedRepetitionEngine.swift */; };
 		CBC9355AD08C356F4CB71069 /* QuizSessionBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45DDCF2F6C249029B7FC43A4 /* QuizSessionBuilder.swift */; };
 		E070ED70267EAF8AE37B03C0 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68DA9554BFA876CA09C885C0 /* SpeechService.swift */; };
+		382C3BD2FC764EFD8E552F3F /* ExampleSentenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC943638C0FE4B6D93DE0837 /* ExampleSentenceService.swift */; };
 		ED4322C40E478C6CA8B8AAFD /* QuizWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */; };
+		272E2E3236724E428653524B /* QuizReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51BDBAB801804B39A73447A0 /* QuizReviewView.swift */; };
 		F4A659DA6060E0C9250E234E /* QuizProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D734FFD3FF0A14FD4B56495 /* QuizProgressBarView.swift */; };
 		FF591B088EA4125AD5009F04 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78E229819883AE71C7097B2 /* Word.swift */; };
 		FFAE6391E0176E9DD78F08A9 /* AllWordsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FE47DED5ABEF73EABA4C707 /* AllWordsView.swift */; };
@@ -62,6 +64,7 @@
 		5725279E5AE93A5378710843 /* QuizScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizScheduler.swift; sourceTree = "<group>"; };
 		59A0DCD0A5E7D2C076FDB623 /* WordsListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordsListView.swift; sourceTree = "<group>"; };
 		68DA9554BFA876CA09C885C0 /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
+		EC943638C0FE4B6D93DE0837 /* ExampleSentenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleSentenceService.swift; sourceTree = "<group>"; };
 		79E47B33630966C71CFA1CF4 /* LearnNewWords.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LearnNewWords.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B1EDA3031CFA08BF64A4D0F /* QuizView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizView.swift; sourceTree = "<group>"; };
 		8072C96D482515C32EF3C6C6 /* CSVImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportTests.swift; sourceTree = "<group>"; };
@@ -74,6 +77,7 @@
 		AED32D14B3833654D3C819C6 /* LearnNewWordsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LearnNewWordsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B9C4FE23BD629680407CB0A1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizWindowController.swift; sourceTree = "<group>"; };
+		51BDBAB801804B39A73447A0 /* QuizReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuizReviewView.swift; sourceTree = "<group>"; };
 		D711DE2EEAC797F3C011F167 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D9B71F15548283BBC8C3A9E8 /* CSVImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVImportService.swift; sourceTree = "<group>"; };
 		DC7DE63F2A72283744036D78 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
@@ -171,6 +175,7 @@
 			children = (
 				D9B71F15548283BBC8C3A9E8 /* CSVImportService.swift */,
 				68DA9554BFA876CA09C885C0 /* SpeechService.swift */,
+				EC943638C0FE4B6D93DE0837 /* ExampleSentenceService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -208,6 +213,7 @@
 			children = (
 				56CD7F8F1061F98A47DD1462 /* MultipleChoiceView.swift */,
 				7B1EDA3031CFA08BF64A4D0F /* QuizView.swift */,
+				51BDBAB801804B39A73447A0 /* QuizReviewView.swift */,
 				C53555FAA649E4DA091BEE6F /* QuizWindowController.swift */,
 				AE021352329EA34DED98E7F0 /* TypingAnswerView.swift */,
 			);
@@ -333,9 +339,11 @@
 				CBC9355AD08C356F4CB71069 /* QuizSessionBuilder.swift in Sources */,
 				5C82FF632E2955AC60CF0352 /* QuizView.swift in Sources */,
 				ED4322C40E478C6CA8B8AAFD /* QuizWindowController.swift in Sources */,
+				272E2E3236724E428653524B /* QuizReviewView.swift in Sources */,
 				654B20BE5F879DDB33690791 /* SettingsView.swift in Sources */,
 				C9808D8A488849E5FD7762FA /* SpacedRepetitionEngine.swift in Sources */,
 				E070ED70267EAF8AE37B03C0 /* SpeechService.swift in Sources */,
+				382C3BD2FC764EFD8E552F3F /* ExampleSentenceService.swift in Sources */,
 				1DC130C0D0D984F958EDB894 /* StatsView.swift in Sources */,
 				24CE2FA02BF9670CF9267592 /* TypingAnswerView.swift in Sources */,
 				FF591B088EA4125AD5009F04 /* Word.swift in Sources */,

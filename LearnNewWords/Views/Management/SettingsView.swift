@@ -83,7 +83,7 @@ struct SettingsView: View {
             Button {
                 onTriggerQuiz()
             } label: {
-                Label("Practice Now123", systemImage: "play.fill")
+                Label("Practice Now", systemImage: "play.fill")
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)

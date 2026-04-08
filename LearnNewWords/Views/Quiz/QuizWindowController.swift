@@ -45,7 +45,9 @@ final class QuizWindowController {
                 )
                 window.contentView = NSHostingView(rootView: quizView)
                 window.makeKeyAndOrderFront(nil)
-                window.makeKey()
+                // Give keyboard focus to the content view so SwiftUI's @FocusState
+                // (used by TypingAnswerView's TextField) activates correctly.
+                window.makeFirstResponder(window.contentView)
             } else {
                 window.contentView = NSHostingView(rootView: Color.green.ignoresSafeArea())
                 window.ignoresMouseEvents = true
@@ -163,8 +165,17 @@ final class QuizWindowController {
 
     // MARK: - Window factory
 
+    /// Borderless NSWindow subclass that allows becoming the key window.
+    /// Plain borderless windows have canBecomeKey = false by default, so
+    /// makeKey() is silently ignored — keyboard events never reach SwiftUI
+    /// views (TextField, etc.). Overriding fixes typing in TypingAnswerView.
+    private final class KeyableOverlayWindow: NSWindow {
+        override var canBecomeKey: Bool { true }
+        override var canBecomeMain: Bool { true }
+    }
+
     private func makeOverlayWindow(for screen: NSScreen) -> NSWindow {
-        let window = NSWindow(
+        let window = KeyableOverlayWindow(
             contentRect: screen.frame,
             styleMask: .borderless,
             backing: .buffered,

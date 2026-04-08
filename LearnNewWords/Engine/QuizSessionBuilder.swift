@@ -46,7 +46,9 @@ enum QuizSessionBuilder {
 
         return selected.map { word in
             let direction = resolveDirection(settings.questionDirection)
-            let mode = resolveMode(settings.answerType)
+            // Bug 2-1: EN→VN is concept-heavy; typing mode not supported for that direction.
+            // VN→EN (recall) can still use typing.
+            let mode: AnswerMode = direction == .enToVn ? .choice : resolveMode(settings.answerType)
             let distractors = pickDistractors(for: word, from: allWords, direction: direction)
             return QuizItem(word: word, direction: direction, answerMode: mode, distractors: distractors)
         }

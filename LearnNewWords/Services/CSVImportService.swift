@@ -77,10 +77,11 @@ enum CSVImportService {
             }
 
             // CSV columns: english, vietnamese, exampleSentence, englishMeaning, difficulty, category
-            let english    = fields[0].trimmingCharacters(in: .whitespaces)
-            let vietnamese = fields[1].trimmingCharacters(in: .whitespaces)
-            let difficulty = fields.count > 4 ? fields[4].trimmingCharacters(in: .whitespaces) : "B1"
-            let category   = fields.count > 5 ? fields[5].trimmingCharacters(in: .whitespaces) : ""
+            let english         = fields[0].trimmingCharacters(in: .whitespaces)
+            let vietnamese      = fields[1].trimmingCharacters(in: .whitespaces)
+            let exampleSentence = fields.count > 2 ? fields[2].trimmingCharacters(in: .whitespaces) : ""
+            let difficulty      = fields.count > 4 ? fields[4].trimmingCharacters(in: .whitespaces) : "B1"
+            let category        = fields.count > 5 ? fields[5].trimmingCharacters(in: .whitespaces) : ""
 
             guard !english.isEmpty, !vietnamese.isEmpty else {
                 errors.append("Line \(i + 1): empty english or vietnamese field")
@@ -95,7 +96,8 @@ enum CSVImportService {
 
             let finalDifficulty = validDifficulties.contains(difficulty) ? difficulty : "B1"
             context.insert(Word(english: english, vietnamese: vietnamese,
-                                difficulty: finalDifficulty, category: category))
+                                difficulty: finalDifficulty, category: category,
+                                exampleSentence: exampleSentence.isEmpty ? nil : exampleSentence))
             imported += 1
         }
 

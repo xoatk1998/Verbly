@@ -1,29 +1,26 @@
 import SwiftUI
 
-/// 2×2 grid of answer options. Highlights correct/wrong after selection.
+/// 2×2 grid of answer options.
+/// Bug-1 fix: options stored in @State (initialised once in onAppear) so they
+///   don't re-shuffle when QuizView re-renders and creates a new closure identity.
+/// Bug-3 fix: wrong picks are tracked in a Set; other options stay enabled so
+///   the user must find the correct answer rather than being auto-advanced.
 struct MultipleChoiceView: View {
     let item: QuizItem
     let onAnswer: (Bool) -> Void
 
-    @State private var selected: String?
+    @State private var options: [String] = []
+    @State private var wrongPicks: Set<String> = []
+    @State private var correctlyPicked = false
 
-    /// Correct answer + 3 distractors, shuffled once at view init.
-    private let options: [String]
-
-    init(item: QuizItem, onAnswer: @escaping (Bool) -> Void) {
-        self.item = item
-        self.onAnswer = onAnswer
-        let correct = item.direction == .enToVn ? item.word.vietnamese : item.word.english
-        self.options = ([correct] + item.distractors).shuffled()
+    private func correctAnswer() -> String {
+        item.direction == .enToVn ? item.word.vietnamese : item.word.english
     }
 
     var body: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
             ForEach(options, id: \.self) { option in
-                Button {
-                    guard selected == nil else { return }
-                    pick(option)
-                } label: {
+                Button { pick(option) } label: {
                     Text(option)
                         .frame(maxWidth: .infinity, minHeight: 52)
                         .multilineTextAlignment(.center)
@@ -33,27 +30,32 @@ struct MultipleChoiceView: View {
                         .foregroundStyle(.primary)
                 }
                 .buttonStyle(.plain)
-                .disabled(selected != nil)
+                // Disable only: correctly-picked state (all done) OR this button was already wrong
+                .disabled(correctlyPicked || wrongPicks.contains(option))
             }
         }
-    }
-
-    private func correctAnswer() -> String {
-        item.direction == .enToVn ? item.word.vietnamese : item.word.english
+        .onAppear {
+            // Shuffle once; onAppear doesn't re-fire on parent re-renders
+            guard options.isEmpty else { return }
+            options = ([correctAnswer()] + item.distractors).shuffled()
+        }
     }
 
     private func pick(_ option: String) {
-        selected = option
-        onAnswer(option == correctAnswer())
+        guard !correctlyPicked, !wrongPicks.contains(option) else { return }
+        if option == correctAnswer() {
+            correctlyPicked = true
+            onAnswer(true)
+        } else {
+            wrongPicks.insert(option)
+            onAnswer(false)   // parent shows brief "try again" feedback, no auto-advance
+        }
     }
 
     private func tileColor(for option: String) -> Color {
-        guard let sel = selected else {
-            return Color.secondary.opacity(0.15)
-        }
-        let correct = correctAnswer()
-        if option == correct { return .green.opacity(0.35) }
-        if option == sel     { return .red.opacity(0.35) }
-        return Color.secondary.opacity(0.1)
+        // Only reveal green after user picks correctly (bug-3: don't highlight correct on wrong)
+        if correctlyPicked && option == correctAnswer() { return .green.opacity(0.35) }
+        if wrongPicks.contains(option) { return .red.opacity(0.35) }
+        return Color.secondary.opacity(0.15)
     }
 }

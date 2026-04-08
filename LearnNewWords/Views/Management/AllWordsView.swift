@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// "All Words" tab — full CRUD word list with search, difficulty filter, and CSV import.
+/// "All Words" tab — full CRUD word list with search, difficulty filter, CSV import, and clear all.
 struct AllWordsView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Word.english) private var words: [Word]
@@ -12,6 +12,7 @@ struct AllWordsView: View {
     @State private var showImportPicker = false
     @State private var importResult: CSVImportService.ImportResult?
     @State private var showImportAlert = false
+    @State private var showClearConfirm = false  // Bug 2-2
 
     private var filtered: [Word] {
         var result = words
@@ -29,7 +30,7 @@ struct AllWordsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Toolbar: search + add + import
+            // Toolbar: search + add + import + clear all
             HStack(spacing: 6) {
                 HStack {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
@@ -48,6 +49,14 @@ struct AllWordsView: View {
                     Image(systemName: "square.and.arrow.down")
                 }
                 .help("Import CSV")
+
+                // Bug 2-2: Clear all words
+                Button { showClearConfirm = true } label: {
+                    Image(systemName: "trash")
+                        .foregroundStyle(.red)
+                }
+                .help("Clear all words")
+                .disabled(words.isEmpty)
             }
             .padding(.horizontal, 10)
             .padding(.top, 10)
@@ -107,6 +116,17 @@ struct AllWordsView: View {
                 Text("Imported: \(r.imported)\nSkipped: \(r.skipped)\nErrors: \(r.errors.count)")
             }
         }
+        // Bug 2-2: Confirmation before deleting all words
+        .confirmationDialog(
+            "Clear all \(words.count) words?",
+            isPresented: $showClearConfirm,
+            titleVisibility: .visible
+        ) {
+            Button("Clear All", role: .destructive) { clearAllWords() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This cannot be undone.")
+        }
     }
 
     private func handleImport(_ result: Result<[URL], Error>) {
@@ -119,5 +139,11 @@ struct AllWordsView: View {
             importResult = CSVImportService.ImportResult(imported: 0, skipped: 0, errors: [error.localizedDescription])
             showImportAlert = true
         }
+    }
+
+    /// Bug 2-2: Delete every word in the database.
+    private func clearAllWords() {
+        words.forEach { context.delete($0) }
+        try? context.save()
     }
 }
