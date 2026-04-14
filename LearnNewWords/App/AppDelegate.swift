@@ -95,7 +95,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         stats.dailyNewWordsToday += newShown.count
         try? context.save()
 
-        quizWindowController.show(session: session, context: context, stats: stats, sessionTimeoutSeconds: settings.sessionTimeoutSeconds)
+        quizWindowController.show(session: session, context: context, stats: stats, sessionTimeoutSeconds: settings.sessionTimeoutSeconds, overlayColor: settings.backgroundColor)
     }
 
     // MARK: - Menu Bar

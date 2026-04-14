@@ -16,6 +16,7 @@ struct SettingsView: View {
                 quizSection(settings)
                 answerSection(settings)
                 quotaSection(settings)
+                appearanceSection(settings)
                 practiceSection()
             }
             .formStyle(.grouped)
@@ -44,7 +45,7 @@ struct SettingsView: View {
             Stepper(
                 "Words per session: \(s.wordsPerPopup)",
                 value: binding(s, \.wordsPerPopup),
-                in: 1...5
+                in: 1...20
             )
         }
     }
@@ -75,6 +76,31 @@ struct SettingsView: View {
                 in: 1...20
             )
         }
+    }
+
+    @ViewBuilder
+    private func appearanceSection(_ s: AppSettings) -> some View {
+        Section("Appearance") {
+            ColorPicker("Background Color", selection: colorBinding(s), supportsOpacity: false)
+            if s.backgroundColorHex != nil {
+                Button("Reset to Default") {
+                    s.backgroundColorHex = nil
+                    try? context.save()
+                }
+                .foregroundStyle(.red)
+            }
+        }
+    }
+
+    /// Binding that converts Color ↔ hex string stored in AppSettings.
+    private func colorBinding(_ s: AppSettings) -> Binding<Color> {
+        Binding(
+            get: { s.backgroundColor ?? Color(.windowBackgroundColor) },
+            set: { newColor in
+                s.backgroundColorHex = newColor.toHex()
+                try? context.save()
+            }
+        )
     }
 
     @ViewBuilder

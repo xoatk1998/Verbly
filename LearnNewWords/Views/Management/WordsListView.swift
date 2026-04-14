@@ -1,112 +1,90 @@
 import SwiftUI
 import SwiftData
 
-/// "Words" tab — shows today's quiz words and learning progress.
-/// Bug 2-3: "Today's Words" section lists the words scheduled for the next quiz.
-///   Each word has a Replace button that postpones it 24 h so the next eligible
-///   word takes its slot.
+/// "Today" tab — shows today's pinned quiz words and recent word list.
+/// Today's words are stable: Replace swaps only one slot; the list persists
+/// across app restarts (same day) via AppStats.todayWordEnglish.
 struct WordsListView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \Word.addedAt, order: .reverse) private var words: [Word]
     @Query private var statsQuery: [AppStats]
     @Query private var settingsQuery: [AppSettings]
 
-    @State private var searchText = ""
+    /// Cached today's word list — stable across Replace taps and app restarts.
+    @State private var todayWords: [Word] = []
+    /// IDs of words postponed via Replace this session — excluded from future replacements.
+    @State private var postponedIDs: Set<String> = []
 
     private var stats: AppStats? { statsQuery.first }
     private var settings: AppSettings? { settingsQuery.first }
 
-    // MARK: - Today's words (bug 2-3)
-
-    /// Words that will appear in the next quiz session (top N eligible).
-    private var todaysWords: [Word] {
-        guard let s = settings, let st = stats else { return [] }
-        let eligible = SpacedRepetitionEngine.eligibleWords(from: words, settings: s, stats: st)
-        return Array(eligible.prefix(s.wordsPerPopup))
-    }
-
-    // MARK: - Browse list (all active words)
-
-    private var displayWords: [Word] {
-        let active = words.filter { !$0.isMastered }
-        let filtered = searchText.isEmpty ? active : active.filter {
-            $0.english.localizedCaseInsensitiveContains(searchText) ||
-            $0.vietnamese.localizedCaseInsensitiveContains(searchText)
-        }
-        return Array(filtered.prefix(50))
-    }
-
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
-                // Daily stats banner
-                if let s = stats {
-                    HStack {
-                        Text("Today: \(s.dailyNewWordsToday) new words")
-                            .font(.caption).foregroundStyle(.secondary)
-                        Spacer()
-                        if s.streak > 0 {
-                            Text("🔥 \(s.streak) streak")
-                                .font(.caption).foregroundStyle(.orange)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.secondary.opacity(0.05))
+                dailyBanner
+                todaySection
+            }
+        }
+        .onAppear { loadTodayWords() }
+        .onChange(of: settings?.wordsPerPopup) { refreshTodayWords() }
+    }
 
-                    Divider()
-                }
+    // MARK: - Subviews
 
-                // Today's words section
-                if !todaysWords.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Today's Quiz Words")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 12)
-                            .padding(.top, 10)
-
-                        ForEach(todaysWords, id: \.id) { word in
-                            todayWordRow(word)
-                        }
-                    }
-
-                    Divider().padding(.vertical, 8)
-                }
-
-                // Search bar
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("Search all words…", text: $searchText).textFieldStyle(.plain)
-                    if !searchText.isEmpty {
-                        Button { searchText = "" } label: {
-                            Image(systemName: "xmark.circle.fill").foregroundStyle(.secondary)
-                        }.buttonStyle(.plain)
-                    }
-                }
-                .padding(8)
-                .background(Color.secondary.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 10)
-                .padding(.bottom, 6)
-
-                if displayWords.isEmpty {
-                    Text(searchText.isEmpty ? "No words due for review" : "No matches found")
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 24)
-                } else {
-                    LazyVStack(spacing: 0) {
-                        ForEach(displayWords, id: \.id) { word in
-                            WordRowView(word: word)
-                            Divider().padding(.leading, 12)
-                        }
-                    }
+    @ViewBuilder
+    private var dailyBanner: some View {
+        if let s = stats {
+            HStack {
+                Text("Today: \(s.dailyNewWordsToday) new words")
+                    .font(.caption).foregroundStyle(.secondary)
+                Spacer()
+                if s.streak > 0 {
+                    Text("🔥 \(s.streak) streak")
+                        .font(.caption).foregroundStyle(.orange)
                 }
             }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.secondary.opacity(0.05))
+
+            Divider()
         }
     }
 
-    /// A single row in the "Today's Quiz Words" section with a Replace button.
+    @ViewBuilder
+    private var todaySection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Today's Quiz Words")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button { refreshTodayWords() } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("Refresh — replace all words")
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
+
+            if todayWords.isEmpty {
+                Text("No words available")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+            } else {
+                ForEach(todayWords, id: \.id) { word in
+                    todayWordRow(word)
+                }
+            }
+        }
+        Divider().padding(.vertical, 8)
+    }
+
     private func todayWordRow(_ word: Word) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
@@ -114,19 +92,97 @@ struct WordsListView: View {
                 Text(word.vietnamese).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            // Replace: postpone this word 24 h so the next eligible one takes its slot
-            Button("Replace") { postponeWord(word) }
+            Button("Replace") { replaceWord(word) }
                 .font(.caption)
                 .buttonStyle(.bordered)
-                .help("Postpone this word — next eligible word takes its place")
+                .help("Swap this word — only this slot changes")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
     }
 
-    /// Bug 2-3: Pushes `nextReviewAt` 24 h forward so word leaves today's eligible pool.
-    private func postponeWord(_ word: Word) {
+    // MARK: - Today's words stability
+
+    /// Load today's pinned list from AppStats (same day) or recompute fresh.
+    private func loadTodayWords() {
+        guard let s = settings, let st = stats else { return }
+        let today = dayKey()
+
+        if st.todayDateString == today,
+           let pinned = st.todayWordEnglish, !pinned.isEmpty {
+            let englishList = pinned.split(separator: "|").map(String.init)
+            let wordMap = Dictionary(uniqueKeysWithValues: words.map { ($0.english, $0) })
+            let restored = englishList.compactMap { wordMap[$0] }
+            if !restored.isEmpty {
+                todayWords = restored
+                return
+            }
+        }
+
+        // Fresh: compute eligible words for today, then pad to wordsPerPopup
+        // if the quota-limited pool is smaller than the target count.
+        let eligible = SpacedRepetitionEngine.eligibleWords(from: Array(words), settings: s, stats: st)
+        var list = Array(eligible.prefix(s.wordsPerPopup))
+
+        if list.count < s.wordsPerPopup {
+            let existingIDs = Set(list.map { $0.id })
+            let extras = words.filter { !existingIDs.contains($0.id) && !$0.isMastered }.shuffled()
+            list += Array(extras.prefix(s.wordsPerPopup - list.count))
+        }
+
+        todayWords = list
+        savePinned(st)
+    }
+
+    /// Replace one slot: postpone the tapped word, swap in the next available word.
+    private func replaceWord(_ word: Word) {
+        guard let st = stats else { return }
+
+        // Postpone the replaced word (makes isDueForReview return false immediately
+        // since Word is a reference type — no need to wait for @Query refresh).
+        postponedIDs.insert(word.id)
         word.nextReviewAt = Date().addingTimeInterval(24 * 60 * 60)
         try? context.save()
+
+        // Exclude current list + all previously postponed words so replacements never loop.
+        let excluded = Set(todayWords.map { $0.id }).union(postponedIDs)
+        let next = words.first { !excluded.contains($0.id) && !$0.isMastered && $0.isDueForReview }
+            ?? words.first { !excluded.contains($0.id) && !$0.isMastered }
+
+        if let idx = todayWords.firstIndex(where: { $0.id == word.id }) {
+            if let next {
+                todayWords[idx] = next
+            } else {
+                todayWords.remove(at: idx)
+            }
+        }
+
+        savePinned(st)
+    }
+
+    /// Refresh button: discard cache and recompute all slots from scratch.
+    private func refreshTodayWords() {
+        guard let s = settings, let st = stats else { return }
+        let eligible = SpacedRepetitionEngine.eligibleWords(from: Array(words), settings: s, stats: st)
+        var list = Array(eligible.prefix(s.wordsPerPopup))
+        if list.count < s.wordsPerPopup {
+            let existingIDs = Set(list.map { $0.id })
+            let extras = words.filter { !existingIDs.contains($0.id) && !$0.isMastered }.shuffled()
+            list += Array(extras.prefix(s.wordsPerPopup - list.count))
+        }
+        todayWords = list
+        savePinned(st)
+    }
+
+    private func savePinned(_ st: AppStats) {
+        st.todayWordEnglish = todayWords.map { $0.english }.joined(separator: "|")
+        st.todayDateString = dayKey()
+        try? context.save()
+    }
+
+    private func dayKey() -> String {
+        let fmt = DateFormatter()
+        fmt.dateFormat = "yyyy-MM-dd"
+        return fmt.string(from: Date())
     }
 }

@@ -8,5 +8,8 @@
     <!-- Allow user to select CSV files for import -->
     <key>com.apple.security.files.user-selected.read-only</key>
     <true/>
+    <!-- Allow outbound network requests (MyMemory translation + Free Dictionary APIs) -->
+    <key>com.apple.security.network.client</key>
+    <true/>
 </dict>
 </plist>

@@ -1,44 +1,56 @@
 import SwiftUI
 import SwiftData
 
-/// Main quiz interface. Steps through each QuizItem in the session,
-/// records answers, then shows a review card before dismissing.
-///
-/// Bug fixes applied here:
-///   Bug-2: Session-level countdown (no .id reset per question); expiry hides overlay.
-///   Bug-3: Wrong answer → brief "try again" feedback, no auto-advance; correct → 3 s pause.
-///   Bug-4: Speaker icon next to question word; VN→EN auto-plays English on correct pick.
-///   Bug-5: After last question shows QuizReviewView before calling onComplete.
-///   Bug-6: Skip (no score) and Too Easy (marks mastered) action buttons.
-///   Bug-7: Hint button reveals correct answer inline.
+/// Full-screen quiz overlay with redesigned teal card UI.
 struct QuizView: View {
     let session: [QuizItem]
     let context: ModelContext
     let stats: AppStats
     let onComplete: () -> Void
-    /// Passed directly to avoid @Query deadlock during overlay teardown.
     let sessionTimeoutSeconds: Int?
+    /// Custom background color from settings. nil = default teal gradient.
+    var overlayColor: Color? = nil
 
     @State private var currentIndex = 0
     @State private var showFeedback = false
     @State private var feedbackCorrect = false
-    @State private var isAdvancing = false   // blocks Skip/TooEasy/Hint while animating
+    @State private var isAdvancing = false
     @State private var showHint = false
     @State private var showingReview = false
 
+    private let teal = Color(red: 0.05, green: 0.58, blue: 0.53)
     private var currentItem: QuizItem { session[currentIndex] }
 
     var body: some View {
         ZStack {
-            Color(red: 0.13, green: 0.70, blue: 0.37)
+            // Background: custom color if set, else default teal gradient
+            if let color = overlayColor {
+                color.ignoresSafeArea()
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.05, green: 0.58, blue: 0.53),
+                        Color(red: 0.02, green: 0.42, blue: 0.39)
+                    ],
+                    startPoint: .topLeading, endPoint: .bottomTrailing
+                )
                 .ignoresSafeArea()
+            }
+
+            // Decorative circles
+            Circle()
+                .fill(.white.opacity(0.05))
+                .frame(width: 280).offset(x: 160, y: -140)
+            Circle()
+                .fill(.white.opacity(0.05))
+                .frame(width: 200).offset(x: -140, y: 160)
 
             if showingReview {
                 QuizReviewView(words: session.map { $0.word }, onDone: onComplete)
-                    .frame(width: 480, height: 420)
+                    .frame(width: 500, height: 440)
                     .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .shadow(radius: 24)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(color: .black.opacity(0.3), radius: 32, x: 0, y: 8)
             } else {
                 quizCard
             }
@@ -53,94 +65,144 @@ struct QuizView: View {
     // MARK: - Quiz card
 
     private var quizCard: some View {
-        VStack(spacing: 14) {
-            headerRow
-            questionBlock
-            if let timeout = sessionTimeoutSeconds {
-                // Bug-2: NO .id(currentIndex) — one timer for the whole session.
-                // Expiry hides overlay (onComplete), not just advances the question.
-                QuizProgressBarView(totalSeconds: timeout, onExpire: onComplete)
-            }
-            answerArea
-                .id(currentIndex)   // force new child view → resets picked/input state
-            feedbackLabel
-            actionRow
+        VStack(spacing: 0) {
+            cardHeader
+            Divider().opacity(0.15)
+            cardBody
         }
-        .padding(20)
-        .frame(width: 440, height: 420)
+        .frame(width: 460)
         .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(radius: 24)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(color: .black.opacity(0.25), radius: 32, x: 0, y: 8)
     }
 
-    // MARK: - Subviews
-
-    private var headerRow: some View {
+    private var cardHeader: some View {
         HStack {
-            Text("\(currentIndex + 1) / \(session.count)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            // Progress pills
+            HStack(spacing: 4) {
+                ForEach(session.indices, id: \.self) { i in
+                    Capsule()
+                        .fill(i <= currentIndex ? teal : Color.secondary.opacity(0.2))
+                        .frame(width: i == currentIndex ? 20 : 8, height: 6)
+                        .animation(.spring(response: 0.3), value: currentIndex)
+                }
+            }
             Spacer()
+            Text("\(currentIndex + 1) / \(session.count)")
+                .font(.caption).foregroundStyle(.secondary)
             Button {
-                // Defer so button action completes before close() tears down NSHostingView.
                 DispatchQueue.main.async { onComplete() }
             } label: {
-                Image(systemName: "xmark")
-                    .foregroundStyle(.secondary)
+                Image(systemName: "xmark.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.secondary.opacity(0.6))
             }
             .buttonStyle(.plain)
         }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
     }
 
-    /// Bug-4: Speaker icon always visible next to the displayed word.
-    /// Bug-2-4: Example sentence shown for EN→VN questions.
+    private var cardBody: some View {
+        VStack(spacing: 14) {
+            if let timeout = sessionTimeoutSeconds {
+                QuizProgressBarView(totalSeconds: timeout, onExpire: onComplete)
+                    .padding(.horizontal, 20)
+            }
+
+            questionBlock
+                .padding(.horizontal, 20)
+
+            feedbackBanner
+
+            answerArea
+                .padding(.horizontal, 20)
+                .id(currentIndex)
+
+            actionRow
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
+        }
+        .padding(.top, 10)
+    }
+
+    // MARK: - Question
+
     private var questionBlock: some View {
-        VStack(spacing: 6) {
-            HStack(alignment: .center, spacing: 6) {
+        VStack(spacing: 8) {
+            HStack(alignment: .center, spacing: 8) {
                 Text(currentItem.direction == .enToVn
                      ? currentItem.word.english
                      : currentItem.word.vietnamese)
-                    .font(.title2)
-                    .bold()
+                    .font(.system(size: 26, weight: .bold))
                     .multilineTextAlignment(.center)
 
                 Button {
                     SpeechService.shared.speak(currentItem.word.english)
                 } label: {
                     Image(systemName: "speaker.wave.2.fill")
-                        .foregroundStyle(.secondary)
-                        .font(.caption)
+                        .foregroundStyle(teal)
+                        .font(.subheadline)
                 }
                 .buttonStyle(.plain)
             }
 
-            Text(currentItem.direction == .enToVn ? "→ Vietnamese?" : "→ English?")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Label(
+                currentItem.direction == .enToVn ? "Translate to Vietnamese" : "Translate to English",
+                systemImage: currentItem.direction == .enToVn ? "arrow.right" : "arrow.left"
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
 
-            // Show example sentence for EN→VN so user understands context
             if currentItem.direction == .enToVn,
-               let example = currentItem.word.exampleSentence, !example.isEmpty {
-                Text("\"\(example)\"")
-                    .font(.caption)
+               let ex = currentItem.word.exampleSentence, !ex.isEmpty {
+                Text("\"\(ex)\"")
+                    .font(.caption).italic()
                     .foregroundStyle(.secondary)
-                    .italic()
                     .multilineTextAlignment(.center)
-                    .padding(.top, 2)
+                    .lineLimit(2)
             }
 
-            // Bug-7: Hint text revealed on demand
             if showHint {
                 let answer = currentItem.direction == .enToVn
-                    ? currentItem.word.vietnamese
-                    : currentItem.word.english
-                Text("Hint: \(answer)")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .padding(.top, 2)
+                    ? currentItem.word.vietnamese : currentItem.word.english
+                HStack(spacing: 4) {
+                    Image(systemName: "lightbulb.fill").font(.caption2)
+                    Text(answer).font(.caption).bold()
+                }
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 10).padding(.vertical, 5)
+                .background(.orange.opacity(0.1))
+                .clipShape(Capsule())
             }
         }
+        .frame(maxWidth: .infinity)
+        .padding(14)
+        .background(teal.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
+
+    // MARK: - Feedback
+
+    @ViewBuilder
+    private var feedbackBanner: some View {
+        if showFeedback {
+            HStack(spacing: 6) {
+                Image(systemName: feedbackCorrect ? "checkmark.circle.fill" : "arrow.uturn.backward.circle.fill")
+                Text(feedbackCorrect ? "Correct!" : "Try again…")
+                    .font(.subheadline).bold()
+            }
+            .foregroundStyle(feedbackCorrect ? .green : .orange)
+            .padding(.horizontal, 14).padding(.vertical, 7)
+            .background((feedbackCorrect ? Color.green : Color.orange).opacity(0.12))
+            .clipShape(Capsule())
+            .transition(.scale.combined(with: .opacity))
+        } else {
+            Color.clear.frame(height: 30)
+        }
+    }
+
+    // MARK: - Answer area
 
     @ViewBuilder
     private var answerArea: some View {
@@ -151,98 +213,77 @@ struct QuizView: View {
         }
     }
 
-    @ViewBuilder
-    private var feedbackLabel: some View {
-        if showFeedback {
-            Text(feedbackCorrect ? "✓ Correct!" : "✗ Wrong — try again")
-                .font(.headline)
-                .foregroundStyle(feedbackCorrect ? .green : .red)
-        } else {
-            Text(" ").font(.headline)   // reserve space to avoid layout shift
-        }
-    }
+    // MARK: - Action row
 
-    /// Bug-6: Skip / Too Easy   |   Bug-7: Hint
     private var actionRow: some View {
-        HStack(spacing: 12) {
-            Button("Hint") { showHint = true }
-                .buttonStyle(.bordered)
+        HStack(spacing: 8) {
+            actionButton("lightbulb", "Hint", .orange) { showHint = true }
                 .disabled(showHint || isAdvancing)
-
             Spacer()
-
-            Button("Skip") { skipCurrentWord() }
-                .buttonStyle(.bordered)
+            actionButton("forward.fill", "Skip", .secondary) { skipCurrentWord() }
                 .disabled(isAdvancing)
-
-            Button("Too Easy") { markTooEasy() }
-                .buttonStyle(.bordered)
-                .tint(.green)
+            actionButton("checkmark.seal.fill", "Too Easy", teal) { markTooEasy() }
                 .disabled(isAdvancing)
         }
-        .font(.caption)
     }
 
-    // MARK: - Answer handling
+    private func actionButton(_ icon: String, _ label: String, _ color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Image(systemName: icon).font(.caption)
+                Text(label).font(.caption).bold()
+            }
+            .foregroundStyle(color)
+            .padding(.horizontal, 10).padding(.vertical, 6)
+            .background(color.opacity(0.1))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
 
-    /// Called by child views for both correct and wrong answers.
-    ///
-    /// Bug-3:
-    ///   - Wrong  → record, show brief "try again" feedback, DO NOT advance.
-    ///   - Correct → record, auto-play speech (VN→EN), 3 s pause, then advance.
+    // MARK: - Logic
+
     private func advance(correct: Bool) {
         if correct {
             guard !isAdvancing else { return }
             isAdvancing = true
-            SpacedRepetitionEngine.recordAnswer(
-                word: currentItem.word, correct: true, stats: stats, context: context)
-
-            // Bug-4: auto-play English when VN→EN question answered correctly
+            SpacedRepetitionEngine.recordAnswer(word: currentItem.word, correct: true, stats: stats, context: context)
             if currentItem.direction == .vnToEn {
                 SpeechService.shared.speak(currentItem.word.english)
             }
-
-            feedbackCorrect = true
-            showFeedback = true
-
+            withAnimation(.spring(response: 0.3)) {
+                feedbackCorrect = true; showFeedback = true
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                showFeedback = false
+                withAnimation { showFeedback = false }
                 isAdvancing = false
                 moveToNext()
             }
         } else {
-            // Wrong: record but let the child view keep accepting picks/input
-            SpacedRepetitionEngine.recordAnswer(
-                word: currentItem.word, correct: false, stats: stats, context: context)
-            feedbackCorrect = false
-            showFeedback = true
+            SpacedRepetitionEngine.recordAnswer(word: currentItem.word, correct: false, stats: stats, context: context)
+            withAnimation(.spring(response: 0.3)) {
+                feedbackCorrect = false; showFeedback = true
+            }
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                showFeedback = false
+                withAnimation { showFeedback = false }
             }
         }
     }
 
     private func moveToNext() {
         showHint = false
-        if currentIndex + 1 < session.count {
-            currentIndex += 1
-        } else {
-            // Bug-5: show review card instead of dismissing immediately
-            showingReview = true
-        }
+        if currentIndex + 1 < session.count { currentIndex += 1 }
+        else { withAnimation { showingReview = true } }
     }
 
-    /// Bug-6: Skip — advance without recording any answer.
     private func skipCurrentWord() {
         guard !isAdvancing else { return }
         isAdvancing = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            isAdvancing = false
-            moveToNext()
+            isAdvancing = false; moveToNext()
         }
     }
 
-    /// Bug-6: Too Easy — instantly master the word, then skip.
     private func markTooEasy() {
         guard !isAdvancing else { return }
         currentItem.word.isMastered = true
@@ -251,7 +292,6 @@ struct QuizView: View {
     }
 
     private func speakCurrentWord() {
-        // Bug-4: auto-play English word for EN→VN questions on question appear
         if currentItem.direction == .enToVn {
             SpeechService.shared.speak(currentItem.word.english)
         }

@@ -1,18 +1,29 @@
 import SwiftUI
 import SwiftData
 
-/// Sheet for manually adding a single vocabulary word.
-struct AddWordView: View {
+/// Sheet for editing an existing vocabulary word.
+struct EditWordView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var english = ""
-    @State private var vietnamese = ""
-    @State private var difficulty = "B1"
-    @State private var category = ""
-    @State private var exampleSentence = ""
+    let word: Word
+
+    @State private var english: String
+    @State private var vietnamese: String
+    @State private var difficulty: String
+    @State private var category: String
+    @State private var exampleSentence: String
     @State private var isFetching = false
     @State private var fetchFailed = false
+
+    init(word: Word) {
+        self.word = word
+        _english = State(initialValue: word.english)
+        _vietnamese = State(initialValue: word.vietnamese)
+        _difficulty = State(initialValue: word.difficulty)
+        _category = State(initialValue: word.category)
+        _exampleSentence = State(initialValue: word.exampleSentence ?? "")
+    }
 
     private var isValid: Bool {
         !english.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -25,9 +36,7 @@ struct AddWordView: View {
             TextField("Vietnamese", text: $vietnamese)
 
             Picker("Difficulty", selection: $difficulty) {
-                ForEach(["B1", "B2", "C1", "C2"], id: \.self) {
-                    Text($0).tag($0)
-                }
+                ForEach(["B1", "B2", "C1", "C2"], id: \.self) { Text($0).tag($0) }
             }
 
             TextField("Category (optional)", text: $category)
@@ -48,8 +57,7 @@ struct AddWordView: View {
                     Button {
                         Task { await fetchAll() }
                     } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "arrow.clockwise").foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
                     .help("Fetch Vietnamese translation & example sentence")
@@ -57,29 +65,26 @@ struct AddWordView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 320, height: 360)
+        .frame(width: 320, height: 340)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Cancel") { dismiss() }
-            }
+            ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Add") { addWord() }
-                    .disabled(!isValid)
+                Button("Save") { save() }.disabled(!isValid)
             }
         }
     }
 
     private func fetchAll() async {
-        let word = english.trimmingCharacters(in: .whitespaces)
-        guard !word.isEmpty, !isFetching else { return }
+        let w = english.trimmingCharacters(in: .whitespaces)
+        guard !w.isEmpty, !isFetching else { return }
 
         isFetching = true
         fetchFailed = false
 
         async let translation = vietnamese.trimmingCharacters(in: .whitespaces).isEmpty
-            ? TranslationService.translateToVietnamese(word)
+            ? TranslationService.translateToVietnamese(w)
             : nil
-        async let example = ExampleSentenceService.fetch(for: word)
+        async let example = ExampleSentenceService.fetch(for: w)
 
         let (vn, ex) = await (translation, example)
 
@@ -90,17 +95,13 @@ struct AddWordView: View {
         isFetching = false
     }
 
-    private func addWord() {
-        let word = Word(
-            english: english.trimmingCharacters(in: .whitespaces),
-            vietnamese: vietnamese.trimmingCharacters(in: .whitespaces),
-            difficulty: difficulty,
-            category: category.trimmingCharacters(in: .whitespaces),
-            exampleSentence: exampleSentence.trimmingCharacters(in: .whitespaces).isEmpty
-                ? nil
-                : exampleSentence.trimmingCharacters(in: .whitespaces)
-        )
-        context.insert(word)
+    private func save() {
+        word.english = english.trimmingCharacters(in: .whitespaces)
+        word.vietnamese = vietnamese.trimmingCharacters(in: .whitespaces)
+        word.difficulty = difficulty
+        word.category = category.trimmingCharacters(in: .whitespaces)
+        let trimmed = exampleSentence.trimmingCharacters(in: .whitespaces)
+        word.exampleSentence = trimmed.isEmpty ? nil : trimmed
         try? context.save()
         dismiss()
     }

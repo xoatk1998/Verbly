@@ -7,8 +7,15 @@ enum SpacedRepetitionEngine {
 
     // MARK: - Constants
 
-    /// Fibonacci sequence in minutes — mirrors background.js `FIBONACCI` constant.
+    /// Fibonacci sequence in minutes — used for short-term reinforcement (correctCount 1–3).
     static let fibonacciMinutes = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89]
+
+    /// Day-based intervals for long-term retention (correctCount ≥ 3).
+    /// After a word is learned in short-term sessions, it graduates to daily spacing.
+    static let dayIntervals = [1, 3, 7, 14, 30]   // days
+
+    /// correctCount at which scheduling switches from minutes → days.
+    static let longTermThreshold = 3
 
     /// Correct answers needed to mark a word as mastered — mirrors `MASTERED_THRESHOLD`.
     static let masteredThreshold = 7
@@ -16,10 +23,22 @@ enum SpacedRepetitionEngine {
     // MARK: - Scheduling
 
     /// Returns the next review Date after `correctCount` consecutive correct answers.
+    ///
+    /// Two-tier scheduling:
+    /// - correctCount 1–2 (short-term): Fibonacci minutes for same/next-session reinforcement.
+    /// - correctCount ≥ 3 (long-term): Day-based ladder so words resurface across days/weeks.
     static func nextReviewDate(correctCount: Int) -> Date {
-        let idx = min(correctCount, fibonacciMinutes.count - 1)
-        let minutes = fibonacciMinutes[idx]
-        return Date().addingTimeInterval(Double(minutes) * 60)
+        if correctCount < longTermThreshold {
+            // Short-term: minute-based Fibonacci
+            let idx = min(correctCount, fibonacciMinutes.count - 1)
+            let minutes = fibonacciMinutes[idx]
+            return Date().addingTimeInterval(Double(minutes) * 60)
+        } else {
+            // Long-term: day-based ladder (0-indexed from longTermThreshold)
+            let dayIdx = min(correctCount - longTermThreshold, dayIntervals.count - 1)
+            let days = dayIntervals[dayIdx]
+            return Date().addingTimeInterval(Double(days) * 24 * 60 * 60)
+        }
     }
 
     // MARK: - Answer Recording

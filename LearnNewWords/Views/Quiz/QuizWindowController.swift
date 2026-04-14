@@ -23,7 +23,7 @@ final class QuizWindowController {
 
     // MARK: - Public API
 
-    func show(session: [QuizItem], context: ModelContext, stats: AppStats, sessionTimeoutSeconds: Int?) {
+    func show(session: [QuizItem], context: ModelContext, stats: AppStats, sessionTimeoutSeconds: Int?, overlayColor: Color? = nil) {
         guard !session.isEmpty else { return }
         close()
 
@@ -41,7 +41,8 @@ final class QuizWindowController {
                     context: context,
                     stats: stats,
                     onComplete: { [weak self] in self?.close() },
-                    sessionTimeoutSeconds: sessionTimeoutSeconds
+                    sessionTimeoutSeconds: sessionTimeoutSeconds,
+                    overlayColor: overlayColor
                 )
                 window.contentView = NSHostingView(rootView: quizView)
                 window.makeKeyAndOrderFront(nil)
@@ -49,7 +50,20 @@ final class QuizWindowController {
                 // (used by TypingAnswerView's TextField) activates correctly.
                 window.makeFirstResponder(window.contentView)
             } else {
-                window.contentView = NSHostingView(rootView: Color.green.ignoresSafeArea())
+                // Secondary screens: custom color if set, else teal gradient
+                let bg: AnyView
+                if let color = overlayColor {
+                    bg = AnyView(color.ignoresSafeArea())
+                } else {
+                    bg = AnyView(LinearGradient(
+                        colors: [
+                            Color(red: 0.05, green: 0.58, blue: 0.53),
+                            Color(red: 0.02, green: 0.42, blue: 0.39)
+                        ],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ).ignoresSafeArea())
+                }
+                window.contentView = NSHostingView(rootView: bg)
                 window.ignoresMouseEvents = true
                 window.orderFront(nil)
             }
