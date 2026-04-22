@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnNewWord</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { height: 100%; }
+    body { background: #1a1512; font-family: 'DM Sans', sans-serif; overflow: hidden; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+    input:focus { outline: none; }
+    button { font-family: 'DM Sans', sans-serif; }
+    input[type=range] { accent-color: #e07b54; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="macos-window.jsx"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ─── Design tokens ────────────────────────────────────────────
+const C = {
+  bg: '#f7f3ee',
+  sidebar: 'rgba(232,224,214,0.6)',
+  card: '#ffffff',
+  accent: '#e07b54',
+  accentSoft: '#fdf0eb',
+  blue: '#5b8dd9',
+  blueSoft: '#eef3fc',
+  green: '#3aaa7c',
+  greenSoft: '#e8f7f0',
+  purple: '#9b6dd6',
+  purpleSoft: '#f3eeff',
+  text: '#2a2018',
+  sub: '#7a6d63',
+  muted: '#b0a49a',
+  border: 'rgba(0,0,0,0.07)',
+  shadow: '0 2px 12px rgba(0,0,0,0.07)',
+};
+
+const LEVEL_C = {
+  B1: { bg: C.blueSoft,   fg: C.blue   },
+  B2: { bg: C.greenSoft,  fg: C.green  },
+  C1: { bg: C.accentSoft, fg: C.accent },
+  C2: { bg: C.purpleSoft, fg: C.purple },
+};
+
+// ─── Data ─────────────────────────────────────────────────────
+const INIT_WORDS = [
+  { id:1,  en:'perseverance',  vn:'sự kiên trì',               level:'B2', cat:'Character',     mastery:'mastered', streak:8,  correct:24, total:27 },
+  { id:2,  en:'meticulous',    vn:'tỉ mỉ, cẩn thận',           level:'C1', cat:'Character',     mastery:'learning', streak:3,  correct:9,  total:14 },
+  { id:3,  en:'eloquent',      vn:'hùng hồn, lưu loát',        level:'C1', cat:'Communication', mastery:'learning', streak:2,  correct:6,  total:11 },
+  { id:4,  en:'ambiguous',     vn:'mơ hồ, không rõ ràng',      level:'B2', cat:'Communication', mastery:'new',      streak:0,  correct:0,  total:0  },
+  { id:5,  en:'resilient',     vn:'kiên cường, bền bỉ',        level:'B2', cat:'Character',     mastery:'learning', streak:5,  correct:15, total:19 },
+  { id:6,  en:'pragmatic',     vn:'thực dụng',                 level:'C1', cat:'Character',     mastery:'new',      streak:0,  correct:1,  total:3  },
+  { id:7,  en:'contemplate',   vn:'suy ngẫm, chiêm nghiệm',   level:'B2', cat:'Thinking',      mastery:'mastered', streak:9,  correct:28, total:31 },
+  { id:8,  en:'intricate',     vn:'phức tạp, tinh vi',         level:'C2', cat:'Description',   mastery:'learning', streak:1,  correct:3,  total:8  },
+  { id:9,  en:'diligent',      vn:'chăm chỉ, cần cù',         level:'B1', cat:'Character',     mastery:'mastered', streak:12, correct:36, total:39 },
+  { id:10, en:'superfluous',   vn:'thừa thãi, không cần thiết',level:'C2', cat:'Description',   mastery:'new',      streak:0,  correct:0,  total:0  },
+  { id:11, en:'ephemeral',     vn:'phù du, thoáng qua',        level:'C2', cat:'Description',   mastery:'learning', streak:2,  correct:4,  total:9  },
+  { id:12, en:'benevolent',    vn:'nhân từ, tốt bụng',         level:'B2', cat:'Character',     mastery:'mastered', streak:7,  correct:21, total:24 },
+];
+
+// ─── Tiny utils ───────────────────────────────────────────────
+function Badge({ level }) {
+  const c = LEVEL_C[level] || LEVEL_C.B1;
+  return <span style={{ background:c.bg, color:c.fg, fontSize:11, fontWeight:700, padding:'2px 8px', borderRadius:99 }}>{level}</span>;
+}
+
+function Dot({ mastery }) {
+  const col = { mastered: C.green, learning: C.blue, new: C.muted }[mastery];
+  const lbl = { mastered:'Mastered', learning:'Learning', new:'New' }[mastery];
+  return <span style={{ display:'flex', alignItems:'center', gap:5, color:C.sub, fontSize:12 }}>
+    <span style={{ width:7, height:7, borderRadius:'50%', background:col, display:'inline-block', flexShrink:0 }}/>
+    {lbl}
+  </span>;
+}
+
+function Pill({ children, active, onClick, color }) {
+  return <button onClick={onClick} style={{
+    padding:'5px 13px', borderRadius:99, border:'none', fontSize:12, fontWeight:600,
+    background: active ? (color||C.accent) : 'transparent',
+    color: active ? '#fff' : C.sub,
+    cursor:'pointer', transition:'all 0.15s',
+  }}>{children}</button>;
+}
+
+function Toggle({ on, onChange }) {
+  return <div onClick={()=>onChange(!on)} style={{
+    width:44, height:26, borderRadius:13, background: on ? C.accent : '#ddd5cc',
+    cursor:'pointer', position:'relative', transition:'background 0.2s', flexShrink:0,
+  }}>
+    <div style={{
+      position:'absolute', top:3, left: on ? 21 : 3, width:20, height:20,
+      borderRadius:'50%', background:'#fff', boxShadow:'0 1px 4px rgba(0,0,0,0.2)',
+      transition:'left 0.18s',
+    }}/>
+  </div>;
+}
+
+function RangeSlider({ value, min, max, step=1, onChange, fmt=v=>v }) {
+  return <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+    <input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(+e.target.value)} style={{ flex:1 }}/>
+    <span style={{ minWidth:52, fontSize:13, fontWeight:600, color:C.text, textAlign:'right' }}>{fmt(value)}</span>
+  </div>;
+}
+
+// ─── SVG Icons ─────────────────────────────────────────────────
+const Icons = {
+  words: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor"/><rect x="2" y="7" width="8" height="2" rx="1" fill="currentColor"/><rect x="2" y="11" width="10" height="2" rx="1" fill="currentColor"/></svg>,
+  stats: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><rect x="2" y="9" width="3" height="5" rx="1" fill="currentColor"/><rect x="6.5" y="6" width="3" height="8" rx="1" fill="currentColor"/><rect x="11" y="3" width="3" height="11" rx="1" fill="currentColor"/></svg>,
+  settings: <svg width="16" height="16" fill="none" viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+  sound: <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M3 5H1.5a.5.5 0 00-.5.5v3a.5.5 0 00.5.5H3l3 2.5V2.5L3 5z" fill="currentColor"/><path d="M9 4.5a3 3 0 010 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+  plus: <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  close: <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>,
+  upload: <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M7 9V3M4 6l3-3 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 11h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+};
+
+// ─── Fake Desktop (behind quiz overlay) ───────────────────────
+function FakeDesktop() {
+  return (
+    <div style={{ position:'absolute', inset:0, background:'linear-gradient(145deg,#c8bfb4 0%,#b5aa9d 100%)' }}>
+      <div style={{ position:'absolute', top:36, left:48, right:48, bottom:36, background:'#fff', borderRadius:14, boxShadow:'0 12px 50px rgba(0,0,0,0.25)', overflow:'hidden', filter:'blur(2px)' }}>
+        <div style={{ height:42, background:'#f2efec', borderBottom:'1px solid #e0dbd5', display:'flex', alignItems:'center', gap:8, padding:'0 18px' }}>
+          <div style={{ width:12, height:12, borderRadius:'50%', background:'#ff736a' }}/>
+          <div style={{ width:12, height:12, borderRadius:'50%', background:'#febc2e' }}/>
+          <div style={{ width:12, height:12, borderRadius:'50%', background:'#19c332' }}/>
+          <div style={{ width:220, height:24, background:'#e4e0db', borderRadius:7, marginLeft:18 }}/>
+        </div>
+        <div style={{ padding:'36px 48px', display:'flex', gap:36 }}>
+          <div style={{ flex:2 }}>
+            <div style={{ height:26, background:'#2a2018', borderRadius:5, width:'65%', marginBottom:18 }}/>
+            {[100,92,87,78,94,83,70].map((w,i)=><div key={i} style={{ height:13, background:'#e5e0d8', borderRadius:3, width:`${w}%`, marginBottom:9 }}/>)}
+          </div>
+          <div style={{ flex:1 }}>
+            <div style={{ height:160, background:'#e8e2db', borderRadius:10, marginBottom:12 }}/>
+            <div style={{ height:13, background:'#e5e0d8', borderRadius:3, width:'80%', marginBottom:7 }}/>
+            <div style={{ height:13, background:'#e5e0d8', borderRadius:3, width:'65%' }}/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Multiple Choice ──────────────────────────────────────────
+function MultiChoice({ word, dir, opts, onAnswer, answered }) {
+  const qWord = dir==='en-vn' ? word.en : word.vn;
+  const isItalic = dir==='en-vn';
+  return <>
+    <div style={{ textAlign:'center', color:C.sub, fontSize:13, fontWeight:500, marginBottom:6 }}>
+      {dir==='en-vn' ? 'Translate to Vietnamese' : 'What does this mean in English?'}
+    </div>
+    <div style={{ textAlign:'center', fontFamily:'"DM Serif Display",serif', fontSize: isItalic ? 42 : 32, color:C.text, fontStyle: isItalic ? 'italic':'normal', lineHeight:1.15, marginBottom:28 }}>
+      {qWord}
+    </div>
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10 }}>
+      {opts.map((opt,i) => {
+        let bg='#f8f4f0', border=`1.5px solid ${C.border}`, col=C.text;
+        if (answered) {
+          if (opt.correct) { bg=C.greenSoft; border=`1.5px solid ${C.green}`; col=C.green; }
+          else if (opt===answered && !opt.correct) { bg='#fff0f0'; border='1.5px solid #f08080'; col='#d9534f'; }
+        }
+        return <button key={i} onClick={()=>!answered&&onAnswer(opt)} style={{
+          padding:'14px 12px', borderRadius:12, background:bg, border, color:col,
+          fontSize:13, fontWeight:500, cursor: answered?'default':'pointer',
+          textAlign:'center', lineHeight:1.4, transition:'all 0.18s',
+        }}
+        onMouseOver={e=>{ if(!answered) e.currentTarget.style.background='#ede8e2'; }}
+        onMouseOut={e=>{ if(!answered) e.currentTarget.style.background=bg; }}
+        >{opt.text}</button>;
+      })}
+    </div>
+  </>;
+}
+
+// ─── Typing Input ─────────────────────────────────────────────
+function TypingInput({ word, dir, onAnswer, answered }) {
+  const [val, setVal] = useState('');
+  const qWord = dir==='en-vn' ? word.en : word.vn;
+  const answer = dir==='en-vn' ? word.vn : word.en;
+  const isItalic = dir==='en-vn';
+  const correct = val.trim().toLowerCase().includes(answer.split(',')[0].trim().toLowerCase());
+
+  function submit() {
+    if (!val.trim() || answered) return;
+    onAnswer({ text:val, correct });
+  }
+
+  return <>
+    <div style={{ textAlign:'center', color:C.sub, fontSize:13, fontWeight:500, marginBottom:6 }}>
+      {dir==='en-vn' ? 'Type the Vietnamese translation' : 'Type the English word'}
+    </div>
+    <div style={{ textAlign:'center', fontFamily:'"DM Serif Display",serif', fontSize: isItalic ? 42 : 32, color:C.text, fontStyle: isItalic ? 'italic':'normal', lineHeight:1.15, marginBottom:28 }}>
+      {qWord}
+    </div>
+    {!answered ? (
+      <div>
+        <input autoFocus value={val} onChange={e=>setVal(e.target.value)} onKeyDown={e=>e.key==='Enter'&&submit()}
+          placeholder={dir==='en-vn' ? 'Nhập nghĩa tiếng Việt...' : 'Type the English word...'}
+          style={{ width:'100%', padding:'13px 16px', borderRadius:12, border:`1.5px solid ${C.border}`,
+            background:'#f8f4f0', fontSize:15, color:C.text, marginBottom:12 }}/>
+        <button onClick={submit} style={{
+          width:'100%', padding:'13px', borderRadius:12, background:C.accent, border:'none', color:'#fff',
+          fontSize:14, fontWeight:600, cursor:'pointer', transition:'opacity 0.15s',
+        }}
+        onMouseOver={e=>e.currentTarget.style.opacity='0.88'}
+        onMouseOut={e=>e.currentTarget.style.opacity='1'}
+        >Check Answer</button>
+      </div>
+    ) : (
+      <div style={{ padding:'18px', borderRadius:12, background: correct ? C.greenSoft : '#fff0f0',
+        border:`1.5px solid ${correct ? C.green : '#f08080'}`, textAlign:'center' }}>
+        <div style={{ fontSize:22, marginBottom:6 }}>{correct ? '✓' : '✗'}</div>
+        <div style={{ fontSize:14, color: correct ? C.green : '#d9534f', fontWeight:600 }}>
+          {correct ? 'Great job!' : `Answer: ${answer}`}
+        </div>
+        {!correct && <div style={{ fontSize:12, color:C.sub, marginTop:4 }}>You typed: {val}</div>}
+      </div>
+    )}
+  </>;
+}
+
+// ─── Quiz Overlay ─────────────────────────────────────────────
+function QuizOverlay({ words, onClose }) {
+  const [mode, setMode] = useState('choice');
+  const [dir, setDir] = useState('en-vn');
+  const [wi, setWi] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [answered, setAnswered] = useState(null);
+  const [score, setScore] = useState({ correct:0, total:0 });
+
+  const word = words[wi % words.length];
+
+  const opts = useMemo(() => {
+    const correct = dir==='en-vn' ? word.vn : word.en;
+    const pool = words.filter((_,i)=>i!==wi%words.length).sort(()=>Math.random()-0.5).slice(0,3)
+      .map(w=>({ text: dir==='en-vn'?w.vn:w.en, correct:false }));
+    return [...pool, { text:correct, correct:true }].sort(()=>Math.random()-0.5);
+  }, [wi, dir, words]);
+
+  useEffect(()=>{
+    if (answered) return;
+    if (timeLeft <= 0) { onClose(); return; }
+    const t = setInterval(()=>setTimeLeft(p=>p-1), 1000);
+    return ()=>clearInterval(t);
+  }, [answered, timeLeft]);
+
+  function handleAnswer(opt) {
+    setAnswered(opt);
+    setScore(s=>({ correct: s.correct+(opt.correct?1:0), total: s.total+1 }));
+    setTimeout(()=>{
+      setAnswered(null); setTimeLeft(30);
+      setWi(i=>i+1);
+      setDir(d=>d==='en-vn'?'vn-en':'en-vn');
+      setMode(m=>m==='choice'?'typing':'choice');
+    }, 1800);
+  }
+
+  const pct = (timeLeft/30)*100;
+  const timerColor = timeLeft>10 ? C.accent : '#e05252';
+
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:9000 }}>
+      <FakeDesktop/>
+      <div style={{ position:'absolute', inset:0, background:'rgba(20,14,8,0.55)',
+        backdropFilter:'blur(10px) saturate(70%)', WebkitBackdropFilter:'blur(10px) saturate(70%)' }}/>
+
+      {/* Score pill */}
+      <div style={{ position:'absolute', top:28, right:32,
+        background:'rgba(255,255,255,0.18)', backdropFilter:'blur(20px)',
+        borderRadius:99, padding:'7px 16px', color:'#fff', fontSize:13, fontWeight:600,
+        border:'1px solid rgba(255,255,255,0.25)' }}>
+        {score.correct}/{score.total} correct
+      </div>
+
+      {/* Card */}
+      <div style={{
+        position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+        width:520, background:'rgba(252,249,245,0.94)',
+        backdropFilter:'blur(50px) saturate(150%)', WebkitBackdropFilter:'blur(50px) saturate(150%)',
+        borderRadius:24, boxShadow:'0 40px 100px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.6)',
+        overflow:'hidden',
+      }}>
+        {/* Timer bar */}
+        <div style={{ height:4, background:'#e8e2da' }}>
+          <div style={{ height:'100%', width:`${pct}%`, background:timerColor,
+            transition:'width 1s linear, background 0.3s', borderRadius:'0 2px 2px 0' }}/>
+        </div>
+
+        {/* Top bar */}
+        <div style={{ padding:'14px 20px 0', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <Badge level={word.level}/>
+            <span style={{ fontSize:12, color:C.muted }}>{word.cat}</span>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            {/* mode switcher */}
+            <div style={{ display:'flex', background:'#ede8e2', borderRadius:8, padding:2, gap:1 }}>
+              {[['choice','Choice'],['typing','Typing']].map(([m,l])=>(
+                <button key={m} onClick={()=>setMode(m)} style={{
+                  padding:'4px 11px', borderRadius:6, border:'none', fontSize:11, fontWeight:700,
+                  background: mode===m ? '#fff' : 'transparent',
+                  color: mode===m ? C.accent : C.sub, cursor:'pointer',
+                  boxShadow: mode===m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                }}>{l}</button>
+              ))}
+            </div>
+            <span style={{ fontSize:13, fontWeight:800, color:timerColor, minWidth:26 }}>{timeLeft}s</span>
+            <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:C.muted, padding:4 }}>
+              {Icons.close}
+            </button>
+          </div>
+        </div>
+
+        {/* Direction tabs */}
+        <div style={{ display:'flex', justifyContent:'center', gap:4, padding:'14px 0 0' }}>
+          <div style={{ display:'flex', background:'#ede8e2', borderRadius:99, padding:3, gap:2 }}>
+            {[['en-vn','EN → VN'],['vn-en','VN → EN']].map(([d,l])=>(
+              <button key={d} onClick={()=>setDir(d)} style={{
+                padding:'5px 16px', borderRadius:99, border:'none', fontSize:12, fontWeight:700,
+                background: dir===d ? C.accent : 'transparent',
+                color: dir===d ? '#fff' : C.sub, cursor:'pointer', transition:'all 0.15s',
+              }}>{l}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding:'20px 30px 26px' }}>
+          {mode==='choice'
+            ? <MultiChoice word={word} dir={dir} opts={opts} onAnswer={handleAnswer} answered={answered}/>
+            : <TypingInput key={`${wi}-${dir}`} word={word} dir={dir} onAnswer={handleAnswer} answered={answered}/>
+          }
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding:'12px 28px 16px', borderTop:`1px solid ${C.border}`,
+          display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <button style={{ background:'none', border:'none', color:C.muted, fontSize:12, cursor:'pointer',
+            display:'flex', alignItems:'center', gap:5 }}>
+            {Icons.sound} {word.en}
+          </button>
+          <div style={{ display:'flex', alignItems:'center', gap:14 }}>
+            {word.streak > 0 && <span style={{ fontSize:12, color:C.muted }}>{word.streak}× streak</span>}
+            <button onClick={onClose} style={{ background:'none', border:'none', fontSize:12, color:C.muted, cursor:'pointer' }}>
+              Skip →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Words Screen ──────────────────────────────────────────────
+function WordsScreen({ words, setWords, onQuiz }) {
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [showAdd, setShowAdd] = useState(false);
+
+  const filtered = words.filter(w => {
+    const s = search.toLowerCase();
+    const matchS = w.en.toLowerCase().includes(s) || w.vn.includes(s);
+    const matchF = filter==='all' || w.mastery===filter || w.level===filter;
+    return matchS && matchF;
+  });
+
+  return (
+    <div style={{ height:'100%', display:'flex', flexDirection:'column' }}>
+      {/* Header */}
+      <div style={{ padding:'22px 28px 16px', display:'flex', alignItems:'flex-start', justifyContent:'space-between', flexShrink:0 }}>
+        <div>
+          <h2 style={{ fontSize:20, fontWeight:700, color:C.text }}>My Words</h2>
+          <p style={{ fontSize:12, color:C.muted, marginTop:3 }}>
+            {words.length} words · {words.filter(w=>w.mastery==='mastered').length} mastered
+          </p>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={()=>setShowAdd(true)} style={{ display:'flex', alignItems:'center', gap:6,
+            padding:'8px 16px', borderRadius:10, background:C.bg, border:`1.5px solid ${C.border}`,
+            fontSize:13, fontWeight:600, color:C.sub, cursor:'pointer' }}>
+            {Icons.plus} Add
+          </button>
+          <button style={{ display:'flex', alignItems:'center', gap:6,
+            padding:'8px 16px', borderRadius:10, background:C.bg, border:`1.5px solid ${C.border}`,
+            fontSize:13, fontWeight:600, color:C.sub, cursor:'pointer' }}>
+            {Icons.upload} Import CSV
+          </button>
+          <button onClick={onQuiz} style={{ display:'flex', alignItems:'center', gap:7,
+            padding:'8px 18px', borderRadius:10, background:C.accent, border:'none',
+            fontSize:13, fontWeight:700, color:'#fff', cursor:'pointer', transition:'opacity 0.15s' }}
+            onMouseOver={e=>e.currentTarget.style.opacity='0.88'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
+            ▶ Try Quiz
+          </button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div style={{ padding:'0 28px 12px', display:'flex', gap:6, flexWrap:'wrap', flexShrink:0 }}>
+        <div style={{ position:'relative', marginRight:4 }}>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..."
+            style={{ padding:'7px 14px 7px 32px', borderRadius:10, border:`1.5px solid ${C.border}`,
+              background:'#fff', fontSize:13, color:C.text, width:180 }}/>
+          <svg style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }} width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <circle cx="5.5" cy="5.5" r="4" stroke="#b0a49a" strokeWidth="1.5"/>
+            <path d="M8.5 8.5l3 3" stroke="#b0a49a" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
+        </div>
+        {['all','new','learning','mastered','B1','B2','C1','C2'].map(f=>(
+          <button key={f} onClick={()=>setFilter(f)} style={{
+            padding:'6px 13px', borderRadius:99, border:`1.5px solid ${filter===f ? C.accent : C.border}`,
+            background: filter===f ? C.accentSoft : '#fff', color: filter===f ? C.accent : C.sub,
+            fontSize:12, fontWeight:600, cursor:'pointer', textTransform:'capitalize',
+          }}>{f==='all'?'All':f}</button>
+        ))}
+      </div>
+
+      {/* Table header */}
+      <div style={{ padding:'0 28px', flexShrink:0 }}>
+        <div style={{ display:'grid', gridTemplateColumns:'2fr 2.5fr 0.7fr 1fr 1fr 90px',
+          gap:8, padding:'6px 14px 8px', borderBottom:`1px solid ${C.border}` }}>
+          {['English','Vietnamese','Level','Category','Mastery',''].map((h,i)=>(
+            <div key={i} style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em' }}>{h}</div>
+          ))}
+        </div>
+      </div>
+
+      {/* Rows */}
+      <div style={{ flex:1, overflow:'auto', padding:'6px 28px 20px' }}>
+        {filtered.map(w=>(
+          <div key={w.id} style={{
+            display:'grid', gridTemplateColumns:'2fr 2.5fr 0.7fr 1fr 1fr 90px',
+            gap:8, padding:'11px 14px', background:'#fff', borderRadius:12,
+            border:`1px solid ${C.border}`, alignItems:'center', marginBottom:5,
+            transition:'box-shadow 0.15s',
+          }}
+          onMouseOver={e=>e.currentTarget.style.boxShadow='0 2px 14px rgba(0,0,0,0.06)'}
+          onMouseOut={e=>e.currentTarget.style.boxShadow='none'}
+          >
+            <div style={{ fontSize:15, fontWeight:600, fontStyle:'italic', fontFamily:'"DM Serif Display",serif', color:C.text }}>{w.en}</div>
+            <div style={{ fontSize:13, color:C.sub }}>{w.vn}</div>
+            <div><Badge level={w.level}/></div>
+            <div style={{ fontSize:12, color:C.muted }}>{w.cat}</div>
+            <div><Dot mastery={w.mastery}/></div>
+            <div style={{ display:'flex', gap:4 }}>
+              <button style={{ padding:'5px 10px', borderRadius:7, background:'#f4f0ec', border:'none', fontSize:11, fontWeight:600, color:C.sub, cursor:'pointer' }}>Edit</button>
+              <button onClick={()=>setWords(ws=>ws.filter(x=>x.id!==w.id))} style={{ padding:'5px 9px', borderRadius:7, background:'#fff0f0', border:'none', fontSize:11, fontWeight:600, color:'#d9534f', cursor:'pointer' }}>×</button>
+            </div>
+          </div>
+        ))}
+        {filtered.length===0 && <div style={{ textAlign:'center', padding:40, color:C.muted, fontSize:14 }}>No words found</div>}
+      </div>
+
+      {showAdd && <AddModal onClose={()=>setShowAdd(false)} onAdd={w=>{setWords(ws=>[...ws,{...w,id:Date.now(),streak:0,correct:0,total:0}]);setShowAdd(false);}}/>}
+    </div>
+  );
+}
+
+function AddModal({ onClose, onAdd }) {
+  const [f, setF] = useState({ en:'', vn:'', level:'B2', cat:'General', mastery:'new' });
+  const set = (k,v) => setF(p=>({...p,[k]:v}));
+  return (
+    <div style={{ position:'fixed', inset:0, zIndex:500, background:'rgba(0,0,0,0.3)', display:'flex', alignItems:'center', justifyContent:'center' }} onClick={onClose}>
+      <div style={{ background:'#fff', borderRadius:22, padding:28, width:420, boxShadow:'0 24px 70px rgba(0,0,0,0.18)' }} onClick={e=>e.stopPropagation()}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:22 }}>
+          <h3 style={{ fontSize:17, fontWeight:700, color:C.text }}>Add New Word</h3>
+          <button onClick={onClose} style={{ background:'none', border:'none', cursor:'pointer', color:C.muted }}>{Icons.close}</button>
+        </div>
+        {[['en','English word','e.g. perseverance'],['vn','Vietnamese meaning','e.g. sự kiên trì'],['cat','Category','e.g. Character']].map(([k,label,ph])=>(
+          <div key={k} style={{ marginBottom:14 }}>
+            <label style={{ fontSize:12, fontWeight:700, color:C.muted, display:'block', marginBottom:5, textTransform:'uppercase', letterSpacing:'0.04em' }}>{label}</label>
+            <input value={f[k]} onChange={e=>set(k,e.target.value)} placeholder={ph} style={{ width:'100%', padding:'10px 14px', borderRadius:10, border:`1.5px solid ${C.border}`, fontSize:14, color:C.text, background:'#f8f4f0' }}/>
+          </div>
+        ))}
+        <div style={{ marginBottom:22 }}>
+          <label style={{ fontSize:12, fontWeight:700, color:C.muted, display:'block', marginBottom:5, textTransform:'uppercase', letterSpacing:'0.04em' }}>Level</label>
+          <div style={{ display:'flex', gap:6 }}>
+            {['B1','B2','C1','C2'].map(l=>{
+              const c = LEVEL_C[l];
+              return <button key={l} onClick={()=>set('level',l)} style={{
+                flex:1, padding:'8px 0', borderRadius:9, border:`2px solid ${f.level===l ? c.fg : C.border}`,
+                background: f.level===l ? c.bg : '#fff', color: f.level===l ? c.fg : C.sub,
+                fontSize:13, fontWeight:700, cursor:'pointer',
+              }}>{l}</button>;
+            })}
+          </div>
+        </div>
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={onClose} style={{ flex:1, padding:'11px', borderRadius:11, background:'#f4f0ec', border:'none', fontSize:13, fontWeight:600, color:C.sub, cursor:'pointer' }}>Cancel</button>
+          <button onClick={()=>f.en&&f.vn&&onAdd(f)} style={{ flex:2, padding:'11px', borderRadius:11, background:C.accent, border:'none', color:'#fff', fontSize:13, fontWeight:700, cursor:'pointer', opacity: (f.en&&f.vn)?1:0.5 }}>Add Word</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Stats Screen ──────────────────────────────────────────────
+function StatsScreen({ words }) {
+  const totalAns = words.reduce((a,w)=>a+w.total,0);
+  const totalOk  = words.reduce((a,w)=>a+w.correct,0);
+  const acc = totalAns ? Math.round((totalOk/totalAns)*100) : 0;
+  const mastered = words.filter(w=>w.mastery==='mastered').length;
+  const learning = words.filter(w=>w.mastery==='learning').length;
+  const newW     = words.filter(w=>w.mastery==='new').length;
+
+  return (
+    <div style={{ height:'100%', overflow:'auto', padding:'22px 28px 28px' }}>
+      <h2 style={{ fontSize:20, fontWeight:700, color:C.text }}>Statistics</h2>
+      <p style={{ fontSize:12, color:C.muted, marginTop:3, marginBottom:20 }}>Your learning progress</p>
+
+      {/* Big four */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:16 }}>
+        {[
+          { l:'Accuracy',         v:`${acc}%`,    s:`${totalOk}/${totalAns} answers`, c:C.accent  },
+          { l:'Day Streak',       v:'7 days',     s:'Best: 14 days',                  c:C.blue    },
+          { l:'Words Mastered',   v:mastered,     s:`of ${words.length} total`,       c:C.green   },
+          { l:'Today\'s Sessions',v:'5',          s:'2 new words today',              c:C.purple  },
+        ].map((s,i)=>(
+          <div key={i} style={{ background:'#fff', borderRadius:16, padding:'18px 16px', border:`1px solid ${C.border}` }}>
+            <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:10 }}>{s.l}</div>
+            <div style={{ fontSize:30, fontWeight:800, color:s.c, lineHeight:1, fontVariantNumeric:'tabular-nums' }}>{s.v}</div>
+            <div style={{ fontSize:11, color:C.muted, marginTop:6 }}>{s.s}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }}>
+        {/* Mastery bars */}
+        <div style={{ background:'#fff', borderRadius:16, padding:'18px 18px', border:`1px solid ${C.border}` }}>
+          <h3 style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:16 }}>Vocabulary Mastery</h3>
+          {[
+            { l:'Mastered', n:mastered, c:C.green  },
+            { l:'Learning', n:learning, c:C.blue   },
+            { l:'New',      n:newW,     c:C.muted  },
+          ].map((b,i)=>(
+            <div key={i} style={{ marginBottom:13 }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+                <span style={{ fontSize:13, fontWeight:500, color:C.text }}>{b.l}</span>
+                <span style={{ fontSize:12, color:C.muted }}>{b.n} words</span>
+              </div>
+              <div style={{ height:7, background:'#ede8e2', borderRadius:99 }}>
+                <div style={{ height:'100%', width:`${(b.n/words.length)*100}%`, background:b.c, borderRadius:99 }}/>
+              </div>
+            </div>
+          ))}
+
+          {/* simple ring chart proxy */}
+          <div style={{ display:'flex', gap:8, marginTop:18 }}>
+            {[
+              { l:'Mastered', n:mastered, c:C.green  },
+              { l:'Learning', n:learning, c:C.blue   },
+              { l:'New',      n:newW,     c:'#ddd5c8' },
+            ].map((s,i)=>(
+              <div key={i} style={{ flex:1, background:s.c+'22', borderRadius:10, padding:'10px 8px', textAlign:'center', border:`1px solid ${s.c}33` }}>
+                <div style={{ fontSize:20, fontWeight:800, color:s.c }}>{s.n}</div>
+                <div style={{ fontSize:10, color:C.muted, fontWeight:600 }}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Daily goal */}
+        <div style={{ background:'#fff', borderRadius:16, padding:'18px', border:`1px solid ${C.border}` }}>
+          <h3 style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:4 }}>Daily Goal</h3>
+          <p style={{ fontSize:12, color:C.muted, marginBottom:14 }}>5 new words per day</p>
+          <div style={{ display:'flex', gap:6, marginBottom:14 }}>
+            {[1,2,3,4,5].map(i=>(
+              <div key={i} style={{ flex:1, height:28, borderRadius:7,
+                background: i<=2 ? C.accent : '#ede8e2',
+                transition:'background 0.2s' }}/>
+            ))}
+          </div>
+          <div style={{ fontSize:12, color:C.sub, marginBottom:18 }}>2 of 5 new words today</div>
+
+          <div style={{ borderTop:`1px solid ${C.border}`, paddingTop:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:10 }}>Next Reviews</div>
+            {words.slice(0,4).map(w=>(
+              <div key={w.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                <span style={{ fontSize:13, fontStyle:'italic', fontFamily:'"DM Serif Display",serif', color:C.text }}>{w.en}</span>
+                <span style={{ fontSize:11, color:C.muted, background:'#f4f0ec', padding:'3px 8px', borderRadius:99 }}>
+                  {w.streak ? `${w.streak}min` : 'now'}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Per-word table */}
+      <div style={{ background:'#fff', borderRadius:16, padding:'18px', border:`1px solid ${C.border}` }}>
+        <h3 style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:14 }}>Word Performance</h3>
+        <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr 1fr 1fr 80px', gap:8 }}>
+          {['Word','Accuracy','Answers','Streak','Status'].map(h=>(
+            <div key={h} style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', paddingBottom:8, borderBottom:`1px solid ${C.border}` }}>{h}</div>
+          ))}
+          {words.slice(0,7).map(w=>{
+            const a = w.total ? Math.round((w.correct/w.total)*100) : null;
+            const aC = a===null ? C.muted : a>70 ? C.green : a>40 ? C.blue : '#d9534f';
+            return <React.Fragment key={w.id}>
+              <div style={{ padding:'9px 0', fontStyle:'italic', fontFamily:'"DM Serif Display",serif', fontSize:14, color:C.text, borderBottom:`1px solid ${C.border}` }}>{w.en}</div>
+              <div style={{ padding:'9px 0', fontSize:13, fontWeight:700, color:aC, borderBottom:`1px solid ${C.border}` }}>{a!==null?`${a}%`:'—'}</div>
+              <div style={{ padding:'9px 0', fontSize:13, color:C.sub, borderBottom:`1px solid ${C.border}` }}>{w.total}</div>
+              <div style={{ padding:'9px 0', fontSize:13, color:C.sub, borderBottom:`1px solid ${C.border}` }}>{w.streak}×</div>
+              <div style={{ padding:'9px 0', borderBottom:`1px solid ${C.border}` }}><Dot mastery={w.mastery}/></div>
+            </React.Fragment>;
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Settings Screen ───────────────────────────────────────────
+function SettingsScreen() {
+  const [s, setS] = useState({
+    enabled:true, interval:30, dailyQuota:5, wordsPerPopup:2,
+    dir:'mixed', answerType:'mixed', timeout:30, levels:['B1','B2','C1','C2'],
+    autoSpeak:true, skipMastered:false,
+  });
+  const set = (k,v) => setS(p=>({...p,[k]:v}));
+
+  function Section({ title, children }) {
+    return <div style={{ background:'#fff', borderRadius:16, padding:'18px 20px', border:`1px solid ${C.border}`, marginBottom:12 }}>
+      <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.07em', marginBottom:14 }}>{title}</div>
+      {children}
+    </div>;
+  }
+  function Row({ label, sub, right, last }) {
+    return <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
+      paddingBottom: last?0:14, marginBottom: last?0:14, borderBottom: last?'none':`1px solid ${C.border}` }}>
+      <div>
+        <div style={{ fontSize:14, fontWeight:500, color:C.text }}>{label}</div>
+        {sub && <div style={{ fontSize:12, color:C.muted, marginTop:2 }}>{sub}</div>}
+      </div>
+      <div style={{ display:'flex', justifyContent:'flex-end', minWidth:200 }}>{right}</div>
+    </div>;
+  }
+  function SegCtrl({ opts, val, onChange }) {
+    return <div style={{ display:'flex', background:'#ede8e2', borderRadius:10, padding:3, gap:2 }}>
+      {opts.map(([v,l])=>(
+        <button key={v} onClick={()=>onChange(v)} style={{
+          padding:'6px 12px', borderRadius:7, border:'none', fontSize:12, fontWeight:700,
+          background: val===v ? '#fff' : 'transparent',
+          color: val===v ? C.accent : C.sub, cursor:'pointer',
+          boxShadow: val===v ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+        }}>{l}</button>
+      ))}
+    </div>;
+  }
+
+  return (
+    <div style={{ height:'100%', overflow:'auto', padding:'22px 28px 28px' }}>
+      <h2 style={{ fontSize:20, fontWeight:700, color:C.text }}>Settings</h2>
+      <p style={{ fontSize:12, color:C.muted, marginTop:3, marginBottom:20 }}>Customize your learning experience</p>
+
+      <Section title="General">
+        <Row label="Enable Learning" sub="Show quiz overlays while browsing" right={<Toggle on={s.enabled} onChange={v=>set('enabled',v)}/>}/>
+        <Row label="Auto-pronounce" sub="Play English audio when quiz appears" right={<Toggle on={s.autoSpeak} onChange={v=>set('autoSpeak',v)}/>}/>
+        <Row label="Skip Mastered Words" sub="Only quiz unmastered vocabulary" right={<Toggle on={s.skipMastered} onChange={v=>set('skipMastered',v)}/>} last/>
+      </Section>
+
+      <Section title="Timing">
+        <Row label="Quiz Interval" sub="How often the overlay appears" right={
+          <div style={{ width:210 }}><RangeSlider value={s.interval} min={15} max={3600} step={15} onChange={v=>set('interval',v)} fmt={v=>v<60?`${v}s`:`${Math.round(v/60)}m`}/></div>
+        }/>
+        <Row label="Session Timeout" sub="Auto-close quiz after this long" right={
+          <div style={{ width:210 }}><RangeSlider value={s.timeout} min={10} max={180} step={5} onChange={v=>set('timeout',v)} fmt={v=>`${v}s`}/></div>
+        } last/>
+      </Section>
+
+      <Section title="Content">
+        <Row label="Daily New Words" sub="New vocabulary introduced each day" right={
+          <div style={{ width:210 }}><RangeSlider value={s.dailyQuota} min={1} max={20} onChange={v=>set('dailyQuota',v)} fmt={v=>`${v} words`}/></div>
+        }/>
+        <Row label="Words Per Quiz" sub="Words shown per session" right={
+          <div style={{ width:210 }}><RangeSlider value={s.wordsPerPopup} min={1} max={5} onChange={v=>set('wordsPerPopup',v)} fmt={v=>`${v} words`}/></div>
+        }/>
+        <Row label="Difficulty Filter" sub="Which CEFR levels to include" right={
+          <div style={{ display:'flex', gap:6 }}>
+            {['B1','B2','C1','C2'].map(l=>{
+              const active = s.levels.includes(l);
+              const c = LEVEL_C[l];
+              return <button key={l} onClick={()=>set('levels', active ? s.levels.filter(x=>x!==l) : [...s.levels,l])} style={{
+                padding:'6px 11px', borderRadius:8, border:`2px solid ${active ? c.fg : C.border}`,
+                background: active ? c.bg : '#f8f4f0', color: active ? c.fg : C.muted,
+                fontSize:12, fontWeight:700, cursor:'pointer',
+              }}>{l}</button>;
+            })}
+          </div>
+        } last/>
+      </Section>
+
+      <Section title="Quiz Format">
+        <Row label="Question Direction" sub="Language direction for questions" right={
+          <SegCtrl opts={[['en-vn','EN→VN'],['vn-en','VN→EN'],['mixed','Mixed']]} val={s.dir} onChange={v=>set('dir',v)}/>
+        }/>
+        <Row label="Answer Type" sub="Multiple choice or typing" right={
+          <SegCtrl opts={[['choice','Choice'],['typing','Typing'],['mixed','Mixed']]} val={s.answerType} onChange={v=>set('answerType',v)}/>
+        } last/>
+      </Section>
+    </div>
+  );
+}
+
+// ─── App Shell ─────────────────────────────────────────────────
+function App() {
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('lnw-screen'))||'words'; } catch { return 'words'; }})();
+  const [screen, setScreen] = useState(saved);
+  const [quiz, setQuiz] = useState(false);
+  const [words, setWords] = useState(INIT_WORDS);
+
+  useEffect(()=>{ localStorage.setItem('lnw-screen', screen); }, [screen]);
+
+  const NAV = [
+    { id:'words',    label:'Words',      icon: Icons.words    },
+    { id:'stats',    label:'Statistics', icon: Icons.stats    },
+    { id:'settings', label:'Settings',   icon: Icons.settings },
+  ];
+
+  // Tweaks
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accentColor": "#3aaa7c",
+    "cardRadius": 17,
+    "density": "spacious"
+  }/*EDITMODE-END*/;
+  const [tweaks, setTweaks] = useState(TWEAK_DEFAULTS);
+  const [tweakOpen, setTweakOpen] = useState(false);
+
+  useEffect(()=>{
+    function handle(e) {
+      if (e.data?.type==='__activate_edit_mode') setTweakOpen(true);
+      if (e.data?.type==='__deactivate_edit_mode') setTweakOpen(false);
+    }
+    window.addEventListener('message', handle);
+    window.parent.postMessage({ type:'__edit_mode_available' }, '*');
+    return ()=>window.removeEventListener('message', handle);
+  }, []);
+
+  function applyTweak(k,v) {
+    const next = {...tweaks,[k]:v};
+    setTweaks(next);
+    window.parent.postMessage({ type:'__edit_mode_set_keys', edits:next }, '*');
+  }
+
+  const ac = tweaks.accentColor || C.accent;
+
+  return (
+    <div style={{ width:'100vw', height:'100vh', background:'#1a1512', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      {quiz && <QuizOverlay words={words} onClose={()=>setQuiz(false)}/>}
+
+      {/* macOS window */}
+      <div style={{
+        width:940, height:640, borderRadius:22, overflow:'hidden',
+        boxShadow:'0 0 0 1px rgba(0,0,0,0.35), 0 20px 70px rgba(0,0,0,0.55)',
+        display:'flex', background:C.bg,
+      }}>
+        {/* Sidebar */}
+        <div style={{ width:200, height:'100%', flexShrink:0, background:C.sidebar,
+          backdropFilter:'blur(40px)', borderRight:`1px solid ${C.border}`,
+          display:'flex', flexDirection:'column', padding:'16px 0' }}>
+          {/* Traffic lights */}
+          <div style={{ padding:'2px 18px 20px', display:'flex', gap:7 }}>
+            {['#ff736a','#febc2e','#19c332'].map((c,i)=>(
+              <div key={i} style={{ width:13, height:13, borderRadius:'50%', background:c, border:'0.5px solid rgba(0,0,0,0.1)' }}/>
+            ))}
+          </div>
+
+          {/* App name */}
+          <div style={{ padding:'0 18px 20px' }}>
+            <div style={{ fontSize:15, fontWeight:800, color:C.text, lineHeight:1.2 }}>
+              Learn<br/><span style={{ color:ac }}>NewWord</span>
+            </div>
+          </div>
+
+          {/* Nav */}
+          <div style={{ flex:1 }}>
+            {NAV.map(n=>{
+              const active = screen===n.id;
+              return <button key={n.id} onClick={()=>setScreen(n.id)} style={{
+                width:'100%', padding:'9px 18px', display:'flex', alignItems:'center', gap:10,
+                border:'none', background: active ? `${ac}18` : 'transparent',
+                color: active ? ac : C.sub, fontSize:13, fontWeight: active ? 700 : 500,
+                cursor:'pointer', borderLeft: active ? `2.5px solid ${ac}` : '2.5px solid transparent',
+                textAlign:'left', transition:'all 0.15s',
+              }}>
+                {n.icon} {n.label}
+              </button>;
+            })}
+          </div>
+
+          {/* Quick stats */}
+          <div style={{ margin:'12px 12px 0', background:'rgba(255,255,255,0.5)', borderRadius:12, padding:'12px' }}>
+            <div style={{ fontSize:10, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Today</div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+              <span style={{ fontSize:12, color:C.sub }}>Sessions</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>5</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:5 }}>
+              <span style={{ fontSize:12, color:C.sub }}>New words</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.text }}>2/5</span>
+            </div>
+            <div style={{ display:'flex', justifyContent:'space-between' }}>
+              <span style={{ fontSize:12, color:C.sub }}>Accuracy</span>
+              <span style={{ fontSize:12, fontWeight:700, color:C.green }}>81%</span>
+            </div>
+          </div>
+
+          {/* Quiz button */}
+          <button onClick={()=>setQuiz(true)} style={{
+            margin:'12px 12px 0', padding:'10px', borderRadius:11,
+            background:ac, border:'none', color:'#fff', fontSize:13, fontWeight:700,
+            cursor:'pointer', transition:'opacity 0.15s',
+          }}
+          onMouseOver={e=>e.currentTarget.style.opacity='0.88'}
+          onMouseOut={e=>e.currentTarget.style.opacity='1'}>
+            ▶ Start Quiz
+          </button>
+        </div>
+
+        {/* Content */}
+        <div style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column' }}>
+          {screen==='words'    && <WordsScreen words={words} setWords={setWords} onQuiz={()=>setQuiz(true)}/>}
+          {screen==='stats'    && <StatsScreen words={words}/>}
+          {screen==='settings' && <SettingsScreen/>}
+        </div>
+      </div>
+
+      {/* Tweaks panel */}
+      {tweakOpen && (
+        <div style={{ position:'fixed', bottom:24, right:24, background:'#fff', borderRadius:18, padding:20,
+          boxShadow:'0 8px 40px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.06)',
+          width:240, zIndex:9999 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:C.text, marginBottom:16 }}>Tweaks</div>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Accent Color</div>
+            <div style={{ display:'flex', gap:8 }}>
+              {['#e07b54','#5b8dd9','#3aaa7c','#9b6dd6','#d4506a'].map(col=>(
+                <div key={col} onClick={()=>applyTweak('accentColor',col)} style={{
+                  width:28, height:28, borderRadius:'50%', background:col, cursor:'pointer',
+                  border: ac===col ? `3px solid ${C.text}` : '3px solid transparent',
+                  boxSizing:'border-box', transition:'border 0.15s',
+                }}/>
+              ))}
+            </div>
+          </div>
+          <div style={{ marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Card Radius</div>
+            <RangeSlider value={tweaks.cardRadius} min={6} max={28} onChange={v=>applyTweak('cardRadius',v)} fmt={v=>`${v}px`}/>
+          </div>
+          <div>
+            <div style={{ fontSize:11, fontWeight:700, color:C.muted, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>Density</div>
+            <div style={{ display:'flex', gap:6 }}>
+              {['compact','comfortable','spacious'].map(d=>(
+                <button key={d} onClick={()=>applyTweak('density',d)} style={{
+                  flex:1, padding:'5px 0', borderRadius:8, border:`1.5px solid ${tweaks.density===d ? ac : C.border}`,
+                  background: tweaks.density===d ? ac+'18' : '#f8f4f0', color: tweaks.density===d ? ac : C.sub,
+                  fontSize:10, fontWeight:700, cursor:'pointer', textTransform:'capitalize',
+                }}>{d}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 80 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="56" fill="#f7f3ee"/>
+    <rect x="10" y="10" width="20" height="36" rx="4" fill="#ede8e2"/>
+    <rect x="34" y="10" width="36" height="36" rx="4" fill="#fff" stroke="#e8e2db" strokeWidth="0.5"/>
+    <rect x="38" y="18" width="20" height="3" rx="1.5" fill="#e07b54"/>
+    <rect x="38" y="24" width="28" height="2" rx="1" fill="#e8e2db"/>
+    <rect x="38" y="29" width="24" height="2" rx="1" fill="#e8e2db"/>
+    <rect x="38" y="34" width="26" height="2" rx="1" fill="#e8e2db"/>
+  </svg>
+</template>
+</body>
+</html>
